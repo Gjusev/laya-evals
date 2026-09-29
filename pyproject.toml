@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "laya-evals"
+version = "0.1.0"
+description = "LLM-as-judge and calibration auditing for System 1 decision models: rubric scoring in CI plus reliability diagrams, ECE and coverage/accuracy thresholds by option count"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+keywords = ["llm-evals", "ai-evaluation", "calibration", "ci-cd", "laya", "system-one"]
+dependencies = ["laya>=0.3"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/laya_evals"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
