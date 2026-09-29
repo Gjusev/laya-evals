@@ -8,13 +8,17 @@ from laya_evals.calibration import (
     ece,
     reliability_bins,
 )
+from laya_evals.judge import Judge, Judgment, confidence_outcome_pairs
 
 __version__ = "0.1.0"
 
 __all__ = [
     "CoveragePoint",
+    "Judge",
+    "Judgment",
     "ReliabilityBin",
     "brier_score",
+    "confidence_outcome_pairs",
     "coverage_accuracy_curve",
     "ece",
     "reliability_bins",
