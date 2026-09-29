@@ -14,12 +14,36 @@ the open-source System 1 decision engine (Apache 2.0).
 
 ## Roadmap
 
-- [ ] Calibration core: ECE, Brier, reliability bins and coverage/accuracy curves implemented from scratch, tested against synthetic distributions with known values
+- [x] Calibration core: ECE, Brier, reliability bins and coverage/accuracy curves implemented from scratch, tested against synthetic distributions with known values
 - [ ] Judge: rubric-based score and choice questions as a drop-in cheap replacement for LLM judges, batched
 - [ ] Judge comparison: agreement (kappa) and cost per 1k judgments vs an LLM judge on a public set
 - [ ] Reproduction pack: re-run public benchmark claims (MASSIVE and XNLI subsets) and publish what reproduces
 - [ ] Threshold advisor: recommended min_confidence per question shape at a target accuracy, by option count
 - [ ] GitHub Action: fail the build when accuracy or calibration regresses
+
+## Using the calibration core
+
+The metrics operate on per-example pairs of confidence (float in `[0, 1]`,
+the model's stated probability that its answer is correct — for laya
+decisions, `answer_confidence`) and outcome (whether the answer was actually
+correct):
+
+```python
+from laya_evals import brier_score, coverage_accuracy_curve, ece, reliability_bins
+
+confidences = [0.9, 0.9, 0.9, 0.2]  # answer_confidence per question
+outcomes = [True, True, True, False]  # predicted answer == reference answer
+
+ece(confidences, outcomes)  # expected calibration error, 15 equal-width bins
+brier_score(confidences, outcomes)  # mean squared confidence error
+reliability_bins(confidences, outcomes)  # per-bin confidence/accuracy/count
+coverage_accuracy_curve(confidences, outcomes)  # accuracy as coverage shrinks
+```
+
+Bins follow the standard convention (Guo et al. 2017): equal-width, left-open
+right-closed `(lo, hi]`, 15 by default. Unit tests never touch a laya
+checkpoint; tests that do are marked `slow` and skipped by default
+(`pytest -m slow` to run them).
 
 ## Development setup
 

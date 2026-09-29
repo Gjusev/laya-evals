@@ -21,3 +21,7 @@ packages = ["src/laya_evals"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+markers = [
+    "slow: tests that load real laya checkpoints and may download them (opt-in with: pytest -m slow)",
+]
+addopts = "-m 'not slow'"
