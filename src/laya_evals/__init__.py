@@ -15,6 +15,7 @@ from laya_evals.calibration import (
     ece,
     reliability_bins,
 )
+from laya_evals.baseline import Metric, MetricResult, RegressionCheck, check_regression
 from laya_evals.judge import Judge, Judgment, confidence_outcome_pairs
 from laya_evals.threshold import ThresholdAdvice, advise_thresholds, recommended_threshold
 
@@ -25,10 +26,14 @@ __all__ = [
     "Judge",
     "JudgeComparison",
     "Judgment",
+    "Metric",
+    "MetricResult",
+    "RegressionCheck",
     "ReliabilityBin",
     "ThresholdAdvice",
     "advise_thresholds",
     "brier_score",
+    "check_regression",
     "cohens_kappa",
     "confidence_outcome_pairs",
     "coverage_accuracy_curve",

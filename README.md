@@ -20,7 +20,7 @@ the open-source System 1 decision engine (Apache 2.0).
 - [ ] Public-set judge comparison: measured agreement and cost per 1k judgments vs an LLM judge on a public set (laya side measured vs gold on SST-2, see below; the LLM-judge half is TODO(measure) until a reference run with an API key exists)
 - [x] Reproduction pack: re-run public benchmark claims (MASSIVE and XNLI subsets) and publish what reproduces
 - [x] Threshold advisor: recommended min_confidence per question shape at a target accuracy, by option count
-- [ ] GitHub Action: fail the build when accuracy or calibration regresses
+- [x] GitHub Action: fail the build when accuracy or calibration regresses
 
 ## Using the calibration core
 
@@ -213,6 +213,43 @@ At 20 options, 90% accuracy requires gating at 0.9944 confidence — far
 above the 3-option shape's own advised 0.8074, which already meets the
 0.90 target at 0.893 coverage. A single global min_confidence cannot serve
 both; advise per shape.
+
+## CI: regression gate
+
+`check_regression` compares a fresh measurement JSON against a committed
+baseline (`results/baselines/`) at explicit metric specs — accuracy-like
+metrics (goal `max`) fail on drops beyond tolerance, calibration metrics
+(goal `min`, e.g. ECE) fail on rises. Wall-clock fields are deliberately
+never gated: they drift between runners and would make CI flaky. The CLI
+exits 0/1/2 (pass/regression/usage error):
+
+```bash
+uv run python scripts/check_regression.py \
+    --current results/sst2-comparison.json \
+    --baseline results/baselines/sst2-comparison.json \
+    --metric accuracy_vs_gold:max --metric ece_15_bins:min
+```
+
+The `evals` workflow runs the checkpoint-free unit suite on every push to
+main and on pull requests, and a manual `regression-gate` job (workflow
+dispatch) re-measures the public suites and gates them against the
+committed baseline through the same composite action below — it downloads
+the laya checkpoints (~1.5 GB) and takes minutes of CPU, which is why it
+is not on the push path. Other repos can reuse the gate as a composite
+action:
+
+```yaml
+- uses: Gjusev/laya-evals/.github/actions/regression-gate@main
+  with:
+    current: results/current.json
+    baseline: results/baseline.json
+    metrics: |
+      accuracy_vs_gold:max
+      ece_15_bins:min:0.01
+```
+
+To re-baseline after an accepted change, copy the fresh artifact over the
+file in `results/baselines/` and commit it.
 
 ## Development setup
 

@@ -1,0 +1,51 @@
+name: evals
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # The unit suite is checkpoint-free: no downloads, fast, on every push.
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv
+      - run: uv pip install -e ".[dev]"
+      - run: uv run pytest -q
+
+  # Re-measure on the public suites and gate against the committed baseline.
+  # Manual only: it downloads the laya checkpoints (~1.5 GB) and runs ~10-15
+  # minutes of CPU inference. Wall-clock fields are never gated (they drift
+  # between runners); accuracy and calibration are.
+  regression-gate:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv
+      - run: uv pip install -e ".[compare,dev]"
+      - name: Re-measure the public suites
+        run: >
+          uv run python scripts/reproduction_pack.py --per-lang 300
+          --out results/current-reproduction.json
+      - name: Gate accuracy and calibration against the baseline
+        uses: ./.github/actions/regression-gate
+        with:
+          current: results/current-reproduction.json
+          baseline: results/baselines/reproduction.json
+          metrics: |
+            claims.massive_intent.en.measured:max
+            claims.xnli.en.measured:max
+            suites.massive_intent.en.ece_15_bins:min
+            suites.xnli.en.ece_15_bins:min
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: current-reproduction
+          path: results/current-reproduction.json
