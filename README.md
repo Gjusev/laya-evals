@@ -124,7 +124,7 @@ We re-ran four public `laya` benchmark claims using the upstream notebook’s pr
 | XNLI, English | 0.8600 | **0.8600** | Reproduces |
 | XNLI, 14 other languages | 0.7310 | **0.7307** | Reproduces |
 
-The recorded [reproduction artifact](results/reproduction.json) includes per-language detail, ECE, top-1 Brier score, protocol, and the ±0.05 verdict rule. Re-run it with:
+The recorded [reproduction artifact](results/reproduction.json) includes per-language detail, ECE, top-1 Brier score, protocol, and the ±0.05 verdict rule. The same pack was re-run end-to-end on Kaggle CPU ([public kernel](https://www.kaggle.com/code/gjusev/laya-evals-reproduction), cloned from this repo in a fresh environment) and every one of the 29 suite accuracies came back identical to four decimal places ([claims-only record](results/reproduction-kaggle.json)). Re-run it with:
 
 ```bash
 uv run --extra compare python scripts/reproduction_pack.py --per-lang 300

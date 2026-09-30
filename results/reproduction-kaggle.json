@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "protocol": "upstream laya_benchmark_colab.ipynb, seed 13, 20 options for MASSIVE, first-N test rows per language",
+    "per_lang": 300,
+    "languages": [
+      "ar",
+      "bg",
+      "de",
+      "el",
+      "en",
+      "es",
+      "fr",
+      "hi",
+      "ja",
+      "ko",
+      "pt",
+      "ru",
+      "sw",
+      "ta",
+      "th",
+      "tr",
+      "ur",
+      "vi",
+      "zh",
+      "zh-CN"
+    ],
+    "tolerance": 0.05,
+    "hardware_note": "CPU, single machine; upstream ran one T4 GPU"
+  },
+  "claims": {
+    "massive_intent.en": {
+      "claimed": 0.783,
+      "measured": 0.7833,
+      "delta": 0.0003,
+      "model": "english",
+      "n": 300,
+      "verdict": "reproduces"
+    },
+    "massive_intent.non_en": {
+      "claimed": 0.451,
+      "measured": 0.451,
+      "delta": 0.0,
+      "model": "multilingual",
+      "n": 300,
+      "verdict": "reproduces"
+    },
+    "xnli.en": {
+      "claimed": 0.86,
+      "measured": 0.86,
+      "delta": 0.0,
+      "model": "english",
+      "n": 300,
+      "verdict": "reproduces"
+    },
+    "xnli.non_en": {
+      "claimed": 0.731,
+      "measured": 0.7307,
+      "delta": -0.0003,
+      "model": "multilingual",
+      "n": 300,
+      "verdict": "reproduces"
+    }
+  }
+}
