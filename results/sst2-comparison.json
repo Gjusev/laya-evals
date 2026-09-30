@@ -2409,8 +2409,8 @@
       0.9685430463576159
     ]
   ],
-  "wall_seconds": 136.27409800000078,
-  "decisions_per_second": 6.398868257414517,
+  "wall_seconds": 130.43701860000147,
+  "decisions_per_second": 6.685218731302635,
   "threshold_advice": {
     "target_accuracy": 0.95,
     "threshold": 0.8651,
@@ -2418,8 +2418,12 @@
     "accuracy": 0.9504814305364512,
     "achievable": true
   },
-  "reference_judge_percent_agreement": null,
-  "reference_judge_kappa": null,
   "laya_cost_per_1k_usd": null,
-  "reference_cost_per_1k_usd": null
+  "reference_judge_percent_agreement": 0.9071100917431193,
+  "reference_judge_kappa": 0.8139833766999905,
+  "reference_judge_model": "glm-5.3-flash",
+  "reference_judge_accuracy_vs_gold": 0.9506880733944955,
+  "reference_judge_prompt_tokens": 53690,
+  "reference_judge_completion_tokens": 87731,
+  "reference_cost_per_1k_usd": 0.0595
 }

@@ -48,7 +48,7 @@ An answer confidence is only safe to automate on if it has been calibrated again
 ## Scope and current status
 
 - **Implemented:** calibration core, threshold advice, batched rubric judging, judge-comparison metrics, reproduction pack, and a reusable regression-gate Action.
-- **Measured, not guessed:** the SST-2 laya run and the four reproduction claims below. A public reference-LLM comparison is intentionally still pending; its agreement and cost fields are `null` until a real run is recorded.
+- **Measured, not guessed:** the SST-2 laya run, the four reproduction claims below, and a full reference-LLM judge comparison on the same 872 sentences (glm-5.3-flash, measured tokens and cost).
 - **Use the right confidence:** thresholds are shaped by option count. The audit is specifically designed to prevent a value that worked for one question type from silently governing another.
 - **Known upstream caveat:** the laya checkpoint reports invalid temperature buckets for `choice:11+`; the SST-2 measurement uses two options and is outside that bucket.
 
@@ -142,10 +142,20 @@ One measured CPU run on the balanced 872-item SST-2 development split, using lay
 | Brier score | **0.0779** |
 | Throughput | **6.4 decisions/s** |
 
-The reference LLM judge has not been run, so its agreement and cost fields remain `null` rather than estimated. Full inputs and outputs are in [results/sst2-comparison.json](results/sst2-comparison.json).
+The same 872 sentences were then judged by a reference LLM judge (ZAI `glm-5.3-flash`, temperature 0, one-word verdict):
+
+| | laya | glm-5.3-flash |
+| --- | ---: | ---: |
+| Accuracy against gold | 0.8968 | **0.9507** |
+| Agreement with each other | 0.9071 | 0.9071 |
+| Cohen’s kappa between judges | 0.8140 | 0.8140 |
+| Cost per 1k judgments | local CPU, no per-call price | **$0.0595** (measured tokens × published list price) |
+
+The reference judge is more accurate and, at flash-tier prices, also cheap — the honest case for the laya judge is not price at flash rates but running local: no API dependency, no data leaving the machine, fixed latency, and a calibration audit attached to every judgment. Full inputs, token counts, and outputs are in [results/sst2-comparison.json](results/sst2-comparison.json).
 
 ```bash
-uv run --extra compare python scripts/sst2_judge_comparison.py
+uv run --extra compare python scripts/sst2_judge_comparison.py            # laya side
+ZAI_API_KEY=... uv run --extra compare python scripts/sst2_judge_comparison.py --llm-judge
 uv run --extra compare --extra dev pytest -m slow  # real-checkpoint smoke test
 ```
 
