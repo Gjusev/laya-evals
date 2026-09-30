@@ -20,7 +20,7 @@
   <a href="#quick-start">Quick start</a> · <a href="#what-you-get">What you get</a> · <a href="#evidence">Measured evidence</a> · <a href="#demo">Demo</a>
 </p>
 
-![laya-evals social preview — calibration-first LLM evaluation for CI](docs/assets/social-preview.png)
+![laya-evals social preview — calibration-first LLM evaluation for CI](docs/assets/social-preview.jpg)
 
 > **Early-development community tool.** This is not the `laya-evals` CLI distributed with the upstream `laya` package. It is an independent, Apache-2.0 project built to make automated evaluation more honest.
 
@@ -177,7 +177,7 @@ The reusable GitHub Action lives at [`.github/actions/regression-gate`](.github/
 
 ## Demo
 
-<video controls muted playsinline preload="metadata" poster="docs/assets/social-preview.png" width="100%">
+<video controls muted playsinline preload="metadata" poster="docs/assets/social-preview.jpg" width="100%">
   <source src="docs/brag.mp4" type="video/mp4">
   Your browser does not support embedded video. <a href="docs/brag.mp4">Watch the 21-second demo</a>.
 </video>
