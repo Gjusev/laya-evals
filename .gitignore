@@ -16,3 +16,5 @@ htmlcov/
 *.onnx
 .DS_Store
 Thumbs.db
+
+results/*-smoke.json

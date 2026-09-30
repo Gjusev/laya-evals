@@ -14,7 +14,7 @@ dependencies = ["laya>=0.3"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
-compare = ["kagglehub>=0.3", "pyarrow>=15"]
+compare = ["kagglehub>=0.3", "pyarrow>=15", "datasets>=2.19"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/laya_evals"]

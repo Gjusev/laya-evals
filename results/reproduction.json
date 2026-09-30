@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "protocol": "upstream laya_benchmark_colab.ipynb, seed 13, 20 options for MASSIVE, first-N test rows per language",
+    "per_lang": 300,
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr"
+    ],
+    "tolerance": 0.05,
+    "hardware_note": "CPU, single machine; upstream ran one T4 GPU"
+  },
+  "claims": {
+    "massive_intent.en": {
+      "claimed": 0.783,
+      "measured": 0.7833,
+      "delta": 0.0003,
+      "model": "english",
+      "n": 300,
+      "verdict": "reproduces"
+    },
+    "massive_intent.non_en": {
+      "claimed": 0.451,
+      "measured": 0.5067,
+      "delta": 0.0557,
+      "model": "multilingual",
+      "n": 300,
+      "verdict": "delta_only",
+      "caveat": "claim is a 13-language macro average; measured on a subset of languages"
+    },
+    "xnli.en": {
+      "claimed": 0.86,
+      "measured": 0.86,
+      "delta": 0.0,
+      "model": "english",
+      "n": 300,
+      "verdict": "reproduces"
+    },
+    "xnli.non_en": {
+      "claimed": 0.731,
+      "measured": 0.7856,
+      "delta": 0.0546,
+      "model": "multilingual",
+      "n": 300,
+      "verdict": "delta_only",
+      "caveat": "claim is a 14-language macro average; measured on a subset of languages"
+    }
+  },
+  "suites": {
+    "massive_intent.en": {
+      "n": 300,
+      "accuracy": 0.7833333333333333,
+      "ece_15_bins": 0.1810749999999999,
+      "brier_top1": 0.17163169363333333,
+      "wall_seconds": 141.19334450000042
+    },
+    "massive_intent.de": {
+      "n": 300,
+      "accuracy": 0.4633333333333333,
+      "ece_15_bins": 0.37294766666666623,
+      "brier_top1": 0.3448831847,
+      "wall_seconds": 54.52855540000019
+    },
+    "massive_intent.fr": {
+      "n": 300,
+      "accuracy": 0.5533333333333333,
+      "ece_15_bins": 0.2818396666666666,
+      "brier_top1": 0.27684491769999997,
+      "wall_seconds": 50.396633700000166
+    },
+    "massive_intent.es": {
+      "n": 300,
+      "accuracy": 0.5033333333333333,
+      "ece_15_bins": 0.30560666666666664,
+      "brier_top1": 0.3186089106666667,
+      "wall_seconds": 49.936338099999375
+    },
+    "xnli.en": {
+      "n": 300,
+      "accuracy": 0.86,
+      "ece_15_bins": 0.06853533333333348,
+      "brier_top1": 0.10558995453333334,
+      "wall_seconds": 69.06241229999978
+    },
+    "xnli.de": {
+      "n": 300,
+      "accuracy": 0.79,
+      "ece_15_bins": 0.1378706666666663,
+      "brier_top1": 0.15756651466666668,
+      "wall_seconds": 27.268198599999778
+    },
+    "xnli.fr": {
+      "n": 300,
+      "accuracy": 0.7666666666666667,
+      "ece_15_bins": 0.16008333333333302,
+      "brier_top1": 0.17070627386666667,
+      "wall_seconds": 29.88956479999979
+    },
+    "xnli.es": {
+      "n": 300,
+      "accuracy": 0.8,
+      "ece_15_bins": 0.13462866666666645,
+      "brier_top1": 0.15330631313333332,
+      "wall_seconds": 25.65013689999978
+    }
+  }
+}

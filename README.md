@@ -18,7 +18,7 @@ the open-source System 1 decision engine (Apache 2.0).
 - [x] Judge: rubric-based score and choice questions as a drop-in cheap replacement for LLM judges, batched
 - [x] Judge comparison tooling: percent agreement, Cohen's kappa, quadratic-weighted kappa and cost-per-1k scaling against a reference judge
 - [ ] Public-set judge comparison: measured agreement and cost per 1k judgments vs an LLM judge on a public set (laya side measured vs gold on SST-2, see below; the LLM-judge half is TODO(measure) until a reference run with an API key exists)
-- [ ] Reproduction pack: re-run public benchmark claims (MASSIVE and XNLI subsets) and publish what reproduces
+- [x] Reproduction pack: re-run public benchmark claims (MASSIVE and XNLI subsets) and publish what reproduces
 - [ ] Threshold advisor: recommended min_confidence per question shape at a target accuracy, by option count
 - [ ] GitHub Action: fail the build when accuracy or calibration regresses
 
@@ -144,6 +144,40 @@ bucket. Reproduce with:
 ```bash
 uv run --extra compare python scripts/sst2_judge_comparison.py
 uv run --extra compare --extra dev pytest -m slow   # 16-item smoke, real checkpoint
+```
+
+## What reproduces: laya's public benchmark claims
+
+`scripts/reproduction_pack.py` re-runs the upstream laya README's MASSIVE and
+XNLI claims under the upstream benchmark notebook's exact protocol (seed 13,
+gold + 19 sampled distractors = 20 options for MASSIVE, first 300 test rows
+per language, identical state/instructions/criteria text), with checkpoints
+pinned per claim the way the table specifies them. This run: CPU, single
+machine; upstream ran one T4 GPU. Recorded verbatim in
+`results/reproduction.json`:
+
+| Claim (upstream README) | Claimed | Measured | Verdict |
+|---|---|---|---|
+| MASSIVE intent, English (English checkpoint) | 0.783 | **0.7833** | reproduces (delta +0.0003) |
+| XNLI, English (English checkpoint) | 0.860 | **0.8600** | reproduces (delta 0.0000) |
+| MASSIVE intent, non-English (multilingual) | 0.451 | 0.5067 | delta only — claim is a 13-language macro; measured on de/fr/es, which skew easier |
+| XNLI, non-English (multilingual) | 0.731 | 0.7856 | delta only — claim is a 14-language macro; measured on de/fr/es, which skew easier |
+
+Verdict rule: |measured − claimed| ≤ 0.05 at the claim's sample size
+(300 per language); smaller runs are reported as deltas only, never
+verdicts. Both English claims reproduce under an independent harness on
+different hardware at the upstream sample size, with deltas of +0.0003
+(exactly one item in 300) and 0.0000. The non-English rows are not
+verdicts: our subset covers three high-resource languages while the
+published numbers macro-average 13-14 languages including much harder
+ones; per-language detail for de/fr/es is in the results file (e.g.
+MASSIVE intent de 0.4633 / fr 0.5533 / es 0.5033; XNLI de 0.7900 /
+fr 0.7667 / es 0.8000, with per-suite ECE and top-1 Brier).
+
+Reproduce with:
+
+```bash
+uv run --extra compare python scripts/reproduction_pack.py --per-lang 300
 ```
 
 ## Development setup
