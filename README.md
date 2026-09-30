@@ -193,7 +193,19 @@ uv run python scripts/check_regression.py \
   --metric ece_15_bins:min
 ```
 
-The reusable GitHub Action lives at [`.github/actions/regression-gate`](.github/actions/regression-gate/action.yml). It is designed for a manual benchmark run because checkpoints are large and CPU evaluation takes minutes.
+The gate ships as a standalone action any repo can use — [`gjusev/laya-evals-gate`](https://github.com/Gjusev/laya-evals-gate) (stdlib-only, no model downloads):
+
+```yaml
+- uses: gjusev/laya-evals-gate@v1
+  with:
+    current: results/current.json
+    baseline: results/baselines/current.json
+    metrics: |
+      accuracy_vs_gold:max
+      ece_15_bins:min
+```
+
+This repository's own `regression-gate` job uses the same logic via [`.github/actions/regression-gate`](.github/actions/regression-gate/action.yml). It runs manually because checkpoints are large and CPU evaluation takes minutes.
 
 ## Demo
 
