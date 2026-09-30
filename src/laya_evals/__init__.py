@@ -16,6 +16,7 @@ from laya_evals.calibration import (
     reliability_bins,
 )
 from laya_evals.judge import Judge, Judgment, confidence_outcome_pairs
+from laya_evals.threshold import ThresholdAdvice, advise_thresholds, recommended_threshold
 
 __version__ = "0.1.0"
 
@@ -25,6 +26,8 @@ __all__ = [
     "JudgeComparison",
     "Judgment",
     "ReliabilityBin",
+    "ThresholdAdvice",
+    "advise_thresholds",
     "brier_score",
     "cohens_kappa",
     "confidence_outcome_pairs",
@@ -33,6 +36,7 @@ __all__ = [
     "judge_comparison",
     "percent_agreement",
     "quadratic_weighted_kappa",
+    "recommended_threshold",
     "reliability_bins",
     "__version__",
 ]

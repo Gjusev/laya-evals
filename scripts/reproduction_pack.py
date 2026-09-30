@@ -25,7 +25,9 @@ from pathlib import Path
 from datasets import load_dataset
 from laya import Router
 
-from laya_evals import brier_score, ece
+from laya_evals import brier_score, ece, recommended_threshold
+
+ADVISE_TARGET = 0.90  # accuracy target for the recorded threshold advice
 
 # Upstream protocol constants; ground truth cached at
 # research/laya_benchmark_colab.ipynb (from NandhaKishorM/laya on GitHub,
@@ -135,6 +137,7 @@ def run_suite(router, cases, golds, model):
         decision = answer["choice"]
         confidences.append(float(answer["answer_confidence"]))
         outcomes.append(decision == gold)
+    advice = recommended_threshold(confidences, outcomes, ADVISE_TARGET)
     return {
         "n": len(golds),
         "accuracy": sum(outcomes) / len(outcomes),
@@ -142,6 +145,13 @@ def run_suite(router, cases, golds, model):
         # Binary top-1 Brier on the chosen answer's confidence, NOT the
         # notebook benchmark's multiclass Brier summed over all options
         "brier_top1": brier_score(confidences, outcomes),
+        "threshold_advice": {
+            "target_accuracy": ADVISE_TARGET,
+            "threshold": advice.threshold,
+            "coverage": advice.coverage,
+            "accuracy": advice.accuracy,
+            "achievable": advice.achievable,
+        },
         "wall_seconds": wall_seconds,
     }
 

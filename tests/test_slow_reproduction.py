@@ -36,6 +36,10 @@ def test_tiny_reproduction_run_produces_claim_report():
     assert 0.0 <= measured["accuracy"] <= 1.0
     assert measured["ece_15_bins"] >= 0.0
     assert measured["wall_seconds"] > 0
+    advice = measured["threshold_advice"]
+    assert advice["target_accuracy"] == module.ADVISE_TARGET
+    assert advice["achievable"] is True or advice["threshold"] is None
+    assert 0.0 <= advice["coverage"] <= 1.0
 
     # The verdict machinery is exercised by the fast tests; here just check
     # the claim table's English entries resolve

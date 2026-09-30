@@ -2409,8 +2409,15 @@
       0.9685430463576159
     ]
   ],
-  "wall_seconds": 131.2554197999998,
-  "decisions_per_second": 6.643535187565652,
+  "wall_seconds": 136.27409800000078,
+  "decisions_per_second": 6.398868257414517,
+  "threshold_advice": {
+    "target_accuracy": 0.95,
+    "threshold": 0.8651,
+    "coverage": 0.8337155963302753,
+    "accuracy": 0.9504814305364512,
+    "achievable": true
+  },
   "reference_judge_percent_agreement": null,
   "reference_judge_kappa": null,
   "laya_cost_per_1k_usd": null,

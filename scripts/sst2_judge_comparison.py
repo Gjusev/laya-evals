@@ -27,8 +27,11 @@ from laya_evals import (
     coverage_accuracy_curve,
     ece,
     percent_agreement,
+    recommended_threshold,
     reliability_bins,
 )
+
+ADVISE_TARGET = 0.95  # accuracy target for the recorded threshold advice
 
 DATASET = "kanthetineha/sst2-sentiment-analysis"
 LABELS = {1: "positive", 0: "negative"}
@@ -71,6 +74,7 @@ def run(limit=None):
     judgments = [item["sentiment"] for item in judged]
     decisions = [j.value for j in judgments]
     confidences, outcomes = confidence_outcome_pairs(judgments, golds)
+    advice = recommended_threshold(confidences, outcomes, ADVISE_TARGET)
 
     return {
         "dataset": f"{DATASET} (SST-2 dev split)",
@@ -90,6 +94,13 @@ def run(limit=None):
         ],
         "wall_seconds": wall_seconds,
         "decisions_per_second": len(rows) / wall_seconds,
+        "threshold_advice": {
+            "target_accuracy": ADVISE_TARGET,
+            "threshold": advice.threshold,
+            "coverage": advice.coverage,
+            "accuracy": advice.accuracy,
+            "achievable": advice.achievable,
+        },
         # TODO(measure): fill from a real reference LLM-judge run on the same
         # items; null is honest, a placeholder number is not.
         "reference_judge_percent_agreement": None,

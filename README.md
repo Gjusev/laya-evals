@@ -19,7 +19,7 @@ the open-source System 1 decision engine (Apache 2.0).
 - [x] Judge comparison tooling: percent agreement, Cohen's kappa, quadratic-weighted kappa and cost-per-1k scaling against a reference judge
 - [ ] Public-set judge comparison: measured agreement and cost per 1k judgments vs an LLM judge on a public set (laya side measured vs gold on SST-2, see below; the LLM-judge half is TODO(measure) until a reference run with an API key exists)
 - [x] Reproduction pack: re-run public benchmark claims (MASSIVE and XNLI subsets) and publish what reproduces
-- [ ] Threshold advisor: recommended min_confidence per question shape at a target accuracy, by option count
+- [x] Threshold advisor: recommended min_confidence per question shape at a target accuracy, by option count
 - [ ] GitHub Action: fail the build when accuracy or calibration regresses
 
 ## Using the calibration core
@@ -132,7 +132,7 @@ from a single run on one machine and are recorded verbatim in
 | Cohen's kappa vs gold | 0.7938 |
 | ECE (15 bins) | 0.0253 |
 | Brier score | 0.0779 |
-| Throughput | 6.6 decisions/s (wall-clock, batched, CPU) |
+| Throughput | 6.4 decisions/s (wall-clock, batched, CPU) |
 
 The reference LLM judge was not run (no API key): its agreement, kappa and
 cost-per-1k fields stay null in the results file — TODO(measure), not
@@ -179,6 +179,40 @@ Reproduce with:
 ```bash
 uv run --extra compare python scripts/reproduction_pack.py --per-lang 300
 ```
+
+## Threshold advisor
+
+Confidence thresholds do not transfer across question shapes — the same
+numeric confidence means different things for a 2-option and a 20-option
+question (upstream issue #394). `recommended_threshold` finds, per group of
+(confidence, outcome) pairs, the lowest confidence gate whose kept examples
+still meet a target accuracy; `advise_thresholds` does it per shape key:
+
+```python
+from laya_evals import advise_thresholds
+
+advice = advise_thresholds(
+    {"options=2": (confs_2, outcomes_2), "options=20": (confs_20, outcomes_20)},
+    target_accuracy=0.9,
+)
+# advice["options=20"].threshold, .coverage, .accuracy, .achievable
+```
+
+When no gate can reach the target, `achievable` is False and the best
+available point on the coverage/accuracy curve is reported instead of an
+invented threshold. Applied to the measured runs above (recorded in their
+results files), the shapes need very different gates:
+
+| Measured suite (question shape) | Target | Advised threshold | Coverage |
+|---|---|---|---|
+| SST-2 (2 options) | 0.95 | 0.8651 | 0.834 |
+| XNLI English (3 options) | 0.90 | 0.8074 | 0.893 |
+| MASSIVE intent English (20 options) | 0.90 | 0.9944 | 0.773 |
+
+At 20 options, 90% accuracy requires gating at 0.9944 confidence — far
+above the 3-option shape's own advised 0.8074, which already meets the
+0.90 target at 0.893 coverage. A single global min_confidence cannot serve
+both; advise per shape.
 
 ## Development setup
 

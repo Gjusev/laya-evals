@@ -49,6 +49,11 @@ def test_sst2_small_run_produces_honest_report():
     assert report["reference_judge_kappa"] is None
     assert report["laya_cost_per_1k_usd"] is None
     assert report["reference_cost_per_1k_usd"] is None
+    # Threshold advice is recorded with its target
+    advice = report["threshold_advice"]
+    assert advice["target_accuracy"] == module.ADVISE_TARGET
+    assert advice["achievable"] is True or advice["threshold"] is None
+    assert 0.0 <= advice["coverage"] <= 1.0
     # The coverage curve ends at full coverage and its accuracy there equals
     # the overall accuracy
     assert report["coverage_accuracy_curve"][-1][0] == pytest.approx(1.0)
