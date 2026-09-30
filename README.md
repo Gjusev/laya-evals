@@ -198,14 +198,14 @@ The reusable GitHub Action lives at [`.github/actions/regression-gate`](.github/
 ## Demo
 
 <p align="center">
-  <a href="docs/brag.mp4">
-    <img src="docs/assets/social-preview.jpg" alt="Play the 21-second laya-evals demo" width="100%">
-  </a>
+  <video controls playsinline preload="metadata" poster="docs/assets/social-preview.jpg" width="100%">
+    <source src="docs/brag.mp4" type="video/mp4">
+  </video>
 </p>
 
 <p align="center"><a href="docs/brag.mp4"><strong>▶ Watch the 21-second demo</strong></a></p>
 
-The demo follows a real benchmark reproduction through the threshold-calibration finding. You can also open the [one-page visual overview](docs/index.html).
+The demo follows a real benchmark reproduction through the threshold-calibration finding. The player starts only when you press play; use the link above if your README renderer does not support embedded video. You can also open the [one-page visual overview](docs/index.html).
 
 ## Further reading
 
