@@ -159,20 +159,18 @@ machine; upstream ran one T4 GPU. Recorded verbatim in
 | Claim (upstream README) | Claimed | Measured | Verdict |
 |---|---|---|---|
 | MASSIVE intent, English (English checkpoint) | 0.783 | **0.7833** | reproduces (delta +0.0003) |
+| MASSIVE intent, 13 other languages (multilingual) | 0.451 | **0.4510** | reproduces (delta 0.0000) |
 | XNLI, English (English checkpoint) | 0.860 | **0.8600** | reproduces (delta 0.0000) |
-| MASSIVE intent, non-English (multilingual) | 0.451 | 0.5067 | delta only — claim is a 13-language macro; measured on de/fr/es, which skew easier |
-| XNLI, non-English (multilingual) | 0.731 | 0.7856 | delta only — claim is a 14-language macro; measured on de/fr/es, which skew easier |
+| XNLI, 14 other languages (multilingual) | 0.731 | **0.7307** | reproduces (delta −0.0003) |
 
 Verdict rule: |measured − claimed| ≤ 0.05 at the claim's sample size
-(300 per language); smaller runs are reported as deltas only, never
-verdicts. Both English claims reproduce under an independent harness on
-different hardware at the upstream sample size, with deltas of +0.0003
-(exactly one item in 300) and 0.0000. The non-English rows are not
-verdicts: our subset covers three high-resource languages while the
-published numbers macro-average 13-14 languages including much harder
-ones; per-language detail for de/fr/es is in the results file (e.g.
-MASSIVE intent de 0.4633 / fr 0.5533 / es 0.5033; XNLI de 0.7900 /
-fr 0.7667 / es 0.8000, with per-suite ECE and top-1 Brier).
+(300 per language, the same language lists upstream used — 14 MASSIVE
+languages, 15 XNLI languages); smaller runs are reported as deltas only,
+never verdicts. All four published claims reproduce under an independent
+harness on different hardware (CPU vs a T4), every one within 0.0003 —
+at most a single item in 300. Per-language detail is in the results
+file (e.g. XNLI en 0.8600, de 0.7900, sw 0.6267; MASSIVE intent en
+0.7833), with per-suite ECE and top-1 Brier.
 
 Reproduce with:
 

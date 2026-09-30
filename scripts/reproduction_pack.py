@@ -3,14 +3,16 @@
 Follows the upstream benchmark notebook's exact protocol (seed 13, gold + 19
 sampled distractors = 20 options for MASSIVE, first-N test rows per language,
 identical state/instructions/criteria text) so differences come from the
-model, not the harness. Languages and per-language sizes are subsets of the
-upstream run (CPU here, GPU T4 upstream); every claim is reported with its
-n and an explicit verdict, and nothing is extrapolated.
+model, not the harness. Language lists and per-language sizes match upstream
+exactly (CPU here, GPU T4 upstream); every claim is reported with its n and
+an explicit verdict, and nothing is extrapolated.
 
 Claims are from the upstream README's benchmark table (17,416 questions, one
 T4 GPU): MASSIVE intent English 0.783 (English checkpoint) / 13 other
 languages 0.451 (multilingual); XNLI English 0.860 (English checkpoint) /
-14 other languages 0.731 (multilingual).
+14 other languages 0.731 (multilingual). The language lists and per-language
+sample size match upstream exactly, so every row — including the non-English
+macros — is directly comparable and verdict-eligible.
 
 Usage:
     uv run --extra compare python scripts/reproduction_pack.py [--per-lang N]
@@ -35,29 +37,27 @@ ADVISE_TARGET = 0.90  # accuracy target for the recorded threshold advice
 SEED = 13
 N_OPTS = 20
 CLAIM_N = 300  # claims are per-language n=300 quantities (upstream PER_LANG)
-XNLI_LANGS = ["en", "de", "fr", "es"]  # upstream: 15 languages
-MASSIVE_LANGS = ["en", "de", "fr", "es"]  # upstream: 14 languages
+XNLI_LANGS = ["en", "de", "fr", "es", "ru", "tr", "ar", "hi", "ur", "vi", "th", "el", "bg", "zh", "sw"]
+MASSIVE_LANGS = ["en", "de", "fr", "es", "pt", "ru", "tr", "ar", "hi", "ta", "zh-CN", "ja", "ko", "sw"]
 
 ENGLISH = "english"
 MULTILINGUAL = "multilingual"
 
 # Published claims (upstream README benchmark table). The non-English claims
-# are 13/14-language macro averages; our subsets cover fewer languages, so
-# those are reported as deltas with an explicit caveat, not verdicts.
+# are 13/14-language macro averages over exactly the language lists above,
+# so at per-language n=300 all four rows are directly comparable.
 CLAIMS = {
     "massive_intent.en": {
         "model": ENGLISH, "claimed": 0.783, "verdict_eligible": True,
     },
     "massive_intent.non_en": {
-        "model": MULTILINGUAL, "claimed": 0.451, "verdict_eligible": False,
-        "caveat": "claim is a 13-language macro average; measured on a subset of languages",
+        "model": MULTILINGUAL, "claimed": 0.451, "verdict_eligible": True,
     },
     "xnli.en": {
         "model": ENGLISH, "claimed": 0.860, "verdict_eligible": True,
     },
     "xnli.non_en": {
-        "model": MULTILINGUAL, "claimed": 0.731, "verdict_eligible": False,
-        "caveat": "claim is a 14-language macro average; measured on a subset of languages",
+        "model": MULTILINGUAL, "claimed": 0.731, "verdict_eligible": True,
     },
 }
 TOLERANCE = 0.05  # |measured - claimed| within this reproduces

@@ -76,10 +76,13 @@ class TestVerdictRules:
         assert entry["verdict"] == "delta_only"
         assert "measured at n=8" in entry["caveat"]
 
-    def test_non_english_claims_are_delta_only(self, module):
-        entry = module.verdict_for("xnli.non_en", 0.70, module.CLAIM_N)
-        assert entry["verdict"] == "delta_only"
-        assert "macro average" in entry["caveat"]
+    def test_non_english_claims_are_verdict_eligible(self, module):
+        # Full upstream language coverage: the non-English macros get real
+        # verdicts at the claim's sample size
+        close = module.verdict_for("xnli.non_en", 0.75, module.CLAIM_N)
+        assert close["verdict"] == "reproduces"  # |0.75 - 0.731| = 0.019
+        far = module.verdict_for("xnli.non_en", 0.55, module.CLAIM_N)
+        assert far["verdict"] == "does not reproduce"
 
     def test_per_lang_validation(self, module):
         with pytest.raises(ValueError, match="per-lang"):
