@@ -1,269 +1,196 @@
-# laya-evals
+<p align="center">
+  <img src="docs/assets/laya-evals-mark.svg" width="76" alt="laya-evals logo">
+</p>
 
-> Cheap LLM-as-judge for CI plus a calibration auditor: score eval sets with a local System 1 decision model and audit confidence before automating on it.
+<h1 align="center">laya-evals</h1>
 
-![How laya-evals works](docs/pipeline.svg)
+<p align="center"><strong>Judge cheap. Audit confidence.</strong></p>
 
-A 21-second tour: [brag.mp4](docs/brag.mp4). One-page overview with the
-measured numbers: [docs/index.html](docs/index.html).
+<p align="center">
+  Calibration-first evaluation for <a href="https://github.com/NandhaKishorM/laya">laya</a>: score eval sets with a local System 1 decision model, verify whether its confidence is reliable, and protect CI from regressions.
+</p>
 
-Status: early development. Built on [laya](https://github.com/NandhaKishorM/laya),
-the open-source System 1 decision engine (Apache 2.0).
+<p align="center">
+  <a href="https://github.com/Gjusev/laya-evals/actions/workflows/ci.yml"><img src="https://github.com/Gjusev/laya-evals/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&amp;logoColor=white" alt="Python 3.10 or later">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-346538" alt="Apache 2.0 license"></a>
+</p>
 
-## Why
+<p align="center">
+  <a href="#quick-start">Quick start</a> · <a href="#what-you-get">What you get</a> · <a href="#evidence">Measured evidence</a> · <a href="#demo">Demo</a>
+</p>
 
-- The gaps are filed as open issues in the upstream repo: confidence thresholds do not transfer across option counts (#394), the published ECE columns no longer reproduce (#208), and independent evals had to be hand-rolled (#555, #450).
-- In one large independent eval, answers with confidence >= 0.9 were only 72.2% accurate: automating on confidence without auditing calibration is the classic silent failure.
-- Unofficial community tool, not the laya-evals CLI shipped inside the upstream package.
-- Every project in this portfolio needs honest evals; this one is that capability, productized.
+![laya-evals social preview — calibration-first LLM evaluation for CI](docs/assets/social-preview.png)
 
-## Roadmap
+> **Early-development community tool.** This is not the `laya-evals` CLI distributed with the upstream `laya` package. It is an independent, Apache-2.0 project built to make automated evaluation more honest.
 
-- [x] Calibration core: ECE, Brier, reliability bins and coverage/accuracy curves implemented from scratch, tested against synthetic distributions with known values
-- [x] Judge: rubric-based score and choice questions as a drop-in cheap replacement for LLM judges, batched
-- [x] Judge comparison tooling: percent agreement, Cohen's kappa, quadratic-weighted kappa and cost-per-1k scaling against a reference judge
-- [ ] Public-set judge comparison: measured agreement and cost per 1k judgments vs an LLM judge on a public set (laya side measured vs gold on SST-2, see below; the LLM-judge half is TODO(measure) until a reference run with an API key exists)
-- [x] Reproduction pack: re-run public benchmark claims (MASSIVE and XNLI subsets) and publish what reproduces
-- [x] Threshold advisor: recommended min_confidence per question shape at a target accuracy, by option count
-- [x] GitHub Action: fail the build when accuracy or calibration regresses
+## The problem
 
-## Using the calibration core
+An answer confidence is only safe to automate on if it has been calibrated against gold labels. That meaning can change with the question shape: in our measured runs, a 3-option XNLI question reached a 90% target at a **0.8074** gate, while a 20-option MASSIVE question needed **0.9944**. One global `min_confidence` is not a policy.
 
-The metrics operate on per-example pairs of confidence (float in `[0, 1]`,
-the model's stated probability that its answer is correct — for laya
-decisions, `answer_confidence`) and outcome (whether the answer was actually
-correct):
+`laya-evals` couples a cheap, batched rubric judge with the evidence needed to decide when to trust it.
+
+<p align="center">
+  <img src="docs/pipeline.svg" alt="Eval set flows through laya judge, calibration audit, threshold advisor, and CI gate" width="100%">
+</p>
+
+## What you get
+
+| Capability | Why it matters |
+| --- | --- |
+| **Batched rubric judge** | Ask `choice`, ordered `score`, and boolean `noul` questions in one laya pass. |
+| **Calibration audit** | Compute ECE, Brier score, reliability bins, and coverage/accuracy curves from `(confidence, outcome)` pairs. |
+| **Threshold advisor** | Select the lowest gate that meets a target accuracy, separately for each question shape. |
+| **Judge comparison** | Compare against gold or another judge with agreement, Cohen’s kappa, weighted kappa, accuracy, and cost-per-1k fields. |
+| **CI regression gate** | Fail builds when accuracy drops or calibration worsens; deliberately exclude unstable wall-clock measurements. |
+
+## Scope and current status
+
+- **Implemented:** calibration core, threshold advice, batched rubric judging, judge-comparison metrics, reproduction pack, and a reusable regression-gate Action.
+- **Measured, not guessed:** the SST-2 laya run and the four reproduction claims below. A public reference-LLM comparison is intentionally still pending; its agreement and cost fields are `null` until a real run is recorded.
+- **Use the right confidence:** thresholds are shaped by option count. The audit is specifically designed to prevent a value that worked for one question type from silently governing another.
+- **Known upstream caveat:** the laya checkpoint reports invalid temperature buckets for `choice:11+`; the SST-2 measurement uses two options and is outside that bucket.
+
+## Quick start
+
+Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/).
+
+```bash
+git clone https://github.com/Gjusev/laya-evals.git
+cd laya-evals
+uv venv
+uv pip install -e ".[dev]"
+pytest
+```
+
+Start by turning known outcomes into calibration metrics:
 
 ```python
 from laya_evals import brier_score, coverage_accuracy_curve, ece, reliability_bins
 
-confidences = [0.9, 0.9, 0.9, 0.2]  # answer_confidence per question
-outcomes = [True, True, True, False]  # predicted answer == reference answer
+confidences = [0.90, 0.90, 0.90, 0.20]
+outcomes = [True, True, True, False]  # prediction == gold
 
-ece(confidences, outcomes)  # expected calibration error, 15 equal-width bins
-brier_score(confidences, outcomes)  # mean squared confidence error
-reliability_bins(confidences, outcomes)  # per-bin confidence/accuracy/count
-coverage_accuracy_curve(confidences, outcomes)  # accuracy as coverage shrinks
+print(ece(confidences, outcomes))
+print(brier_score(confidences, outcomes))
+print(reliability_bins(confidences, outcomes))
+print(coverage_accuracy_curve(confidences, outcomes))
 ```
 
-Bins follow the standard convention (Guo et al. 2017): equal-width, left-open
-right-closed `(lo, hi]`, 15 by default. Unit tests never touch a laya
-checkpoint; tests that do are marked `slow` and skipped by default
-(`pytest -m slow` to run them).
-
-## Using the judge
-
-`Judge` wraps a laya `Agent` (or anything shaped like it) and applies rubric
-questions to a whole batch of states in one pass. All three laya question
-types work — `choice` (pick a label), `score` (rate on ordered levels) and
-`noul` (boolean verdict, true iff p(true) >= 0.5). Judgments carry the
-calibrated `answer_confidence` and an optional `min_confidence` gate:
+For laya decisions, use `answer_confidence`—the model’s declared probability that the answer is correct. `Judge` accepts a laya `Agent` (or compatible object), runs a rubric over a batch, and returns judgments with that confidence attached.
 
 ```python
-from laya_evals import Judge, brier_score, confidence_outcome_pairs, ece
+from laya_evals import Judge, confidence_outcome_pairs, ece
 
 judge = Judge(laya_agent, min_confidence=0.8)
 questions = {
     "relevance": {
         "type": "choice",
         "instructions": "Is the answer relevant to the question?",
-        "criteria": {"relevant": "It addresses the question",
-                     "irrelevant": "It does not"},
-    },
-    "quality": {
-        "type": "score",
-        "instructions": "Rate the answer quality",
-        "criteria": ["bad", "weak", "ok", "good"],
-    },
-    "has_answer": {
-        "type": "noul",
-        "instructions": "Does the state contain an answer at all?",
+        "criteria": {
+            "relevant": "It addresses the question.",
+            "irrelevant": "It does not.",
+        },
     },
 }
-judged = judge.judge_batch(model_outputs, questions)  # one pass, batched
 
-# Judge, then audit: gold labels turn judgments into calibration inputs
-relevance = [j["relevance"] for j in judged]
-confidences, outcomes = confidence_outcome_pairs(relevance, gold_relevance)
-ece(confidences, outcomes)
-brier_score(confidences, outcomes)
-```
-
-For score questions the judgment's `level` is the argmax over the emitted
-probabilities — the same level laya's own `decide()` reports — not the
-rounded expected score, so gold comparisons match laya's semantics on
-spread-out distributions too.
-
-## Comparing judges
-
-`judge_comparison` summarizes the laya judge against a reference judge (an
-LLM judge or human gold labels) on the same items: percent agreement,
-Cohen's kappa, quadratic-weighted kappa for ordinal score levels, each
-judge's accuracy against gold, and measured costs scaled to per-1k
-judgments:
-
-```python
-from laya_evals import judge_comparison
-
-comparison = judge_comparison(
-    laya_decisions,       # e.g. [j.level for j in quality_judgments]
-    reference_decisions,  # the LLM judge's decisions on the same items
-    golds=gold_levels,
-    levels=[0, 1, 2, 3],
-    laya_cost=measured_laya_cost,          # TODO(measure) on a public set
-    reference_cost=measured_reference_cost,  # TODO(measure)
+judged = judge.judge_batch(model_outputs, questions)
+confidences, outcomes = confidence_outcome_pairs(
+    [item["relevance"] for item in judged], gold_relevance
 )
-# percent_agreement, kappa, weighted_kappa, laya_accuracy,
-# reference_accuracy, laya_cost_per_1k, reference_cost_per_1k
+print(ece(confidences, outcomes))
 ```
 
-Fields whose inputs were not supplied stay `None` rather than being
-invented; the public-set numbers themselves are TODO(measure) until a real
-run is recorded.
+## Evidence
 
-## Measured: laya judge on SST-2 (public set)
+### Independent reproduction pack
 
-One real run of the laya judge on the public SST-2 dev split (872 balanced
-sentences, Kaggle dataset `kanthetineha/sst2-sentiment-analysis`), CPU
-inference, batches of 64, laya 0.3.21 with the default
-`convaiinnovations/laya` checkpoint. Sentiment was asked as a two-option
-choice question; gold labels map 1 -> positive, 0 -> negative. Numbers are
-from a single run on one machine and are recorded verbatim in
-`results/sst2-comparison.json`:
+We re-ran four public `laya` benchmark claims using the upstream notebook’s protocol: seed 13, 20-option MASSIVE draws, the first 300 test rows per language, pinned checkpoints, and CPU inference on one machine. All four results were within **0.0003** of the published values.
 
-| Metric | Value |
-|---|---|
-| Accuracy vs gold | 0.8968 |
-| Cohen's kappa vs gold | 0.7938 |
-| ECE (15 bins) | 0.0253 |
-| Brier score | 0.0779 |
-| Throughput | 6.4 decisions/s (wall-clock, batched, CPU) |
+| Claim | Published | Measured | Result |
+| --- | ---: | ---: | --- |
+| MASSIVE intent, English | 0.7830 | **0.7833** | Reproduces |
+| MASSIVE intent, 13 other languages | 0.4510 | **0.4510** | Reproduces |
+| XNLI, English | 0.8600 | **0.8600** | Reproduces |
+| XNLI, 14 other languages | 0.7310 | **0.7307** | Reproduces |
 
-The reference LLM judge was not run (no API key): its agreement, kappa and
-cost-per-1k fields stay null in the results file — TODO(measure), not
-invented. The run also surfaces a laya RuntimeWarning that the checkpoint
-ships invalid temperature buckets for `choice:11+` questions (11 or more
-options); the two-option sentiment question used here is outside that
-bucket. Reproduce with:
-
-```bash
-uv run --extra compare python scripts/sst2_judge_comparison.py
-uv run --extra compare --extra dev pytest -m slow   # 16-item smoke, real checkpoint
-```
-
-## What reproduces: laya's public benchmark claims
-
-`scripts/reproduction_pack.py` re-runs the upstream laya README's MASSIVE and
-XNLI claims under the upstream benchmark notebook's exact protocol (seed 13,
-gold + 19 sampled distractors = 20 options for MASSIVE, first 300 test rows
-per language, identical state/instructions/criteria text), with checkpoints
-pinned per claim the way the table specifies them. This run: CPU, single
-machine; upstream ran one T4 GPU. Recorded verbatim in
-`results/reproduction.json`:
-
-| Claim (upstream README) | Claimed | Measured | Verdict |
-|---|---|---|---|
-| MASSIVE intent, English (English checkpoint) | 0.783 | **0.7833** | reproduces (delta +0.0003) |
-| MASSIVE intent, 13 other languages (multilingual) | 0.451 | **0.4510** | reproduces (delta 0.0000) |
-| XNLI, English (English checkpoint) | 0.860 | **0.8600** | reproduces (delta 0.0000) |
-| XNLI, 14 other languages (multilingual) | 0.731 | **0.7307** | reproduces (delta −0.0003) |
-
-Verdict rule: |measured − claimed| ≤ 0.05 at the claim's sample size
-(300 per language, the same language lists upstream used — 14 MASSIVE
-languages, 15 XNLI languages); smaller runs are reported as deltas only,
-never verdicts. All four published claims reproduce under an independent
-harness on different hardware (CPU vs a T4), every one within 0.0003 —
-at most a single item in 300. Per-language detail is in the results
-file (e.g. XNLI en 0.8600, de 0.7900, sw 0.6267; MASSIVE intent en
-0.7833), with per-suite ECE and top-1 Brier.
-
-Reproduce with:
+The recorded [reproduction artifact](results/reproduction.json) includes per-language detail, ECE, top-1 Brier score, protocol, and the ±0.05 verdict rule. Re-run it with:
 
 ```bash
 uv run --extra compare python scripts/reproduction_pack.py --per-lang 300
 ```
 
-## Threshold advisor
+### SST-2 judge measurement
 
-Confidence thresholds do not transfer across question shapes — the same
-numeric confidence means different things for a 2-option and a 20-option
-question (upstream issue #394). `recommended_threshold` finds, per group of
-(confidence, outcome) pairs, the lowest confidence gate whose kept examples
-still meet a target accuracy; `advise_thresholds` does it per shape key:
+One measured CPU run on the balanced 872-item SST-2 development split, using laya 0.3.21 and `convaiinnovations/laya` with a two-option sentiment rubric:
+
+| Metric | Measured |
+| --- | ---: |
+| Accuracy against gold | **0.8968** |
+| Cohen’s kappa | **0.7938** |
+| ECE, 15 bins | **0.0253** |
+| Brier score | **0.0779** |
+| Throughput | **6.4 decisions/s** |
+
+The reference LLM judge has not been run, so its agreement and cost fields remain `null` rather than estimated. Full inputs and outputs are in [results/sst2-comparison.json](results/sst2-comparison.json).
+
+```bash
+uv run --extra compare python scripts/sst2_judge_comparison.py
+uv run --extra compare --extra dev pytest -m slow  # real-checkpoint smoke test
+```
+
+## Choose thresholds per shape
+
+`advise_thresholds` finds the lowest confidence gate whose retained examples meet your target accuracy. If no gate can meet it, it returns the best available point and marks the advice as unachievable—never an invented threshold.
+
+| Measured question shape | Target accuracy | Suggested gate | Coverage |
+| --- | ---: | ---: | ---: |
+| SST-2 · 2 options | 0.95 | 0.8651 | 0.834 |
+| XNLI English · 3 options | 0.90 | 0.8074 | 0.893 |
+| MASSIVE intent English · 20 options | 0.90 | 0.9944 | 0.773 |
 
 ```python
 from laya_evals import advise_thresholds
 
 advice = advise_thresholds(
-    {"options=2": (confs_2, outcomes_2), "options=20": (confs_20, outcomes_20)},
-    target_accuracy=0.9,
+    {
+        "options=2": (confidences_2, outcomes_2),
+        "options=20": (confidences_20, outcomes_20),
+    },
+    target_accuracy=0.90,
 )
-# advice["options=20"].threshold, .coverage, .accuracy, .achievable
 ```
 
-When no gate can reach the target, `achievable` is False and the best
-available point on the coverage/accuracy curve is reported instead of an
-invented threshold. Applied to the measured runs above (recorded in their
-results files), the shapes need very different gates:
+## CI regression gate
 
-| Measured suite (question shape) | Target | Advised threshold | Coverage |
-|---|---|---|---|
-| SST-2 (2 options) | 0.95 | 0.8651 | 0.834 |
-| XNLI English (3 options) | 0.90 | 0.8074 | 0.893 |
-| MASSIVE intent English (20 options) | 0.90 | 0.9944 | 0.773 |
-
-At 20 options, 90% accuracy requires gating at 0.9944 confidence — far
-above the 3-option shape's own advised 0.8074, which already meets the
-0.90 target at 0.893 coverage. A single global min_confidence cannot serve
-both; advise per shape.
-
-## CI: regression gate
-
-`check_regression` compares a fresh measurement JSON against a committed
-baseline (`results/baselines/`) at explicit metric specs — accuracy-like
-metrics (goal `max`) fail on drops beyond tolerance, calibration metrics
-(goal `min`, e.g. ECE) fail on rises. Wall-clock fields are deliberately
-never gated: they drift between runners and would make CI flaky. The CLI
-exits 0/1/2 (pass/regression/usage error):
+Compare a fresh measurement with a committed baseline. Accuracy-like metrics fail on drops; calibration metrics fail on rises. The command exits `0` for pass, `1` for regression, and `2` for invalid usage.
 
 ```bash
 uv run python scripts/check_regression.py \
-    --current results/sst2-comparison.json \
-    --baseline results/baselines/sst2-comparison.json \
-    --metric accuracy_vs_gold:max --metric ece_15_bins:min
+  --current results/sst2-comparison.json \
+  --baseline results/baselines/sst2-comparison.json \
+  --metric accuracy_vs_gold:max \
+  --metric ece_15_bins:min
 ```
 
-The `evals` workflow runs the checkpoint-free unit suite on every push to
-main and on pull requests, and a manual `regression-gate` job (workflow
-dispatch) re-measures the public suites and gates them against the
-committed baseline through the same composite action below — it downloads
-the laya checkpoints (~1.5 GB) and takes minutes of CPU, which is why it
-is not on the push path. Other repos can reuse the gate as a composite
-action:
+The reusable GitHub Action lives at [`.github/actions/regression-gate`](.github/actions/regression-gate/action.yml). It is designed for a manual benchmark run because checkpoints are large and CPU evaluation takes minutes.
 
-```yaml
-- uses: Gjusev/laya-evals/.github/actions/regression-gate@main
-  with:
-    current: results/current.json
-    baseline: results/baseline.json
-    metrics: |
-      accuracy_vs_gold:max
-      ece_15_bins:min:0.01
-```
+## Demo
 
-To re-baseline after an accepted change, copy the fresh artifact over the
-file in `results/baselines/` and commit it.
+<video controls muted playsinline preload="metadata" poster="docs/assets/social-preview.png" width="100%">
+  <source src="docs/brag.mp4" type="video/mp4">
+  Your browser does not support embedded video. <a href="docs/brag.mp4">Watch the 21-second demo</a>.
+</video>
 
-## Development setup
+**21 seconds:** from a real benchmark reproduction to the threshold-calibration finding. If your README renderer does not support video, use [the direct MP4 link](docs/brag.mp4) or open the [one-page visual overview](docs/index.html).
 
-Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/) (or any venv + pip):
+## Further reading
 
-```bash
-uv venv
-uv pip install -e ".[dev]"
-pytest
-```
+- [Interactive visual overview](docs/index.html)
+- [Research notebook](research/laya_benchmark_colab.ipynb)
+- [Reproduction results](results/reproduction.json)
+- [SST-2 judge results](results/sst2-comparison.json)
 
 ## License
 
-Apache 2.0. See [LICENSE](LICENSE).
+Apache-2.0. See [LICENSE](LICENSE).
