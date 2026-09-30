@@ -2,6 +2,11 @@
 
 > Cheap LLM-as-judge for CI plus a calibration auditor: score eval sets with a local System 1 decision model and audit confidence before automating on it.
 
+![How laya-evals works](docs/pipeline.svg)
+
+A 21-second tour: [brag.mp4](docs/brag.mp4). One-page overview with the
+measured numbers: [docs/index.html](docs/index.html).
+
 Status: early development. Built on [laya](https://github.com/NandhaKishorM/laya),
 the open-source System 1 decision engine (Apache 2.0).
 

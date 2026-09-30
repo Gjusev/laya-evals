@@ -18,3 +18,8 @@ htmlcov/
 Thumbs.db
 
 results/*-smoke.json
+
+brag-output/snapshots/
+.playwright-mcp/
+brag-output/brag-raw-poster.png
+brag-output/brag-with-poster.mp4

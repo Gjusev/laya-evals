@@ -1,0 +1,37 @@
+Draft:
+
+We built an open-source calibration auditor for laya, the System 1 decision
+engine, and tried to break its published benchmark numbers. Couldn't. All
+four claims reproduced within 0.0003 on a laptop CPU. Then the audit found
+the actual problem: 0.81 confidence is a safe automation gate for a
+3-option question and barely enough for 20. laya-evals. Judge cheap, audit
+the confidence.
+
+What is still AI about it:
+
+- "Then the audit found the actual problem" reads like a manufactured turn.
+  Real people would just state the finding.
+- "Judge cheap, audit the confidence" lands fine but the sentence before it
+  does the setup-outro rhythm a bit too neatly.
+
+Final:
+
+We tried to break laya's published benchmark numbers and couldn't: all four
+claims reproduced within 0.0003 on a laptop CPU. So we went after the thing
+nobody had checked, the confidence scores themselves. Same model, same 0.81:
+safe to automate on for a 3-option question, barely enough for 20 options.
+That gap is the whole reason laya-evals exists. Judge cheap, audit the
+confidence.
+
+Short variant (X/Twitter):
+
+Tried to break laya's benchmark numbers. Couldn't (all four within 0.0003,
+laptop CPU). Then checked the confidence scores: 0.81 is a safe gate at 3
+options and barely enough at 20. That gap is why laya-evals exists.
+
+LinkedIn variant:
+
+An eval framework that judges cheap and then audits whether the confidence
+meant anything. We reproduced every published laya benchmark claim within
+0.0003, and still found the number everyone automates on changing meaning
+with option count. Open source, Apache 2.0, runs on CPU.

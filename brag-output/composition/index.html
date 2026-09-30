@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>laya-evals — brag</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  @font-face { font-family: "Cascadia Mono"; src: local("Cascadia Mono"); }
+  @font-face { font-family: Consolas; src: local("Consolas"); }
+  body { margin: 0; background: #F7F6F3; color: #111111;
+         font-family: "Helvetica Neue", "Segoe UI", sans-serif; }
+  #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+  .clip { position: absolute; inset: 0; display: grid; place-items: center; }
+  .mono { font-family: Consolas, "Cascadia Mono", "SF Mono", monospace; }
+  .muted { color: #787774; }
+  .serif { font-family: Georgia, "Times New Roman", serif; font-style: italic;
+           letter-spacing: -0.02em; }
+
+  /* scene 1 */
+  .accuse { text-align: center; }
+  .accuse .line { font-size: 44px; letter-spacing: -0.01em; }
+
+  /* scene 2: receipts table */
+  .table { width: 1280px; }
+  .table .row { display: grid; grid-template-columns: 2.2fr 1fr 1fr 1.3fr;
+                border-bottom: 1px solid #EAEAEA; background: #FFFFFF; }
+  .table .row > div { padding: 22px 28px; font-size: 27px; }
+  .table .row .num { font-size: 29px; }
+  .stamp { font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em;
+           background: #EDF3EC; color: #346538; border-radius: 9999px;
+           padding: 4px 14px; margin-left: 16px; white-space: nowrap;
+           display: inline-block; transform: translateY(-3px); }
+  .caption { text-align: center; margin-top: 34px; font-size: 24px; }
+
+  /* scene 3: two panels */
+  .panels { display: flex; gap: 40px; align-items: stretch; }
+  .panel { width: 460px; background: #FFFFFF; border: 1px solid #EAEAEA;
+           border-radius: 14px; padding: 40px 44px; }
+  .panel .k { font-size: 17px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .panel .gate { font-size: 78px; letter-spacing: -0.03em; margin-top: 12px; }
+  .panel .verdict { font-size: 22px; margin-top: 6px; }
+  .meter { position: relative; height: 8px; background: #EFEEEA; border-radius: 4px;
+           margin-top: 26px; overflow: hidden; }
+  .meter i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; width: 0; }
+  .story-head { text-align: center; font-size: 40px; }
+  .story-foot { text-align: center; font-size: 27px; }
+
+  /* scene 4: terminal */
+  .window { width: 1080px; background: #FFFFFF; border: 1px solid #EAEAEA;
+            border-radius: 14px; overflow: hidden; }
+  .chrome { display: flex; gap: 8px; padding: 16px 20px; border-bottom: 1px solid #EAEAEA; }
+  .chrome i { width: 11px; height: 11px; border-radius: 50%; background: #E4E2DE; }
+  .term { padding: 26px 34px 34px; font-size: 26px; line-height: 2.0; }
+  .term .ok { color: #346538; }
+  .term .exit { margin-top: 10px; }
+
+  /* scene 5: outro */
+  .outro { text-align: center; }
+  .outro .tagline { font-size: 74px; line-height: 1.1; }
+  .outro .mark { font-size: 30px; margin-top: 36px; letter-spacing: -0.01em; }
+  .outro .slug { font-size: 22px; margin-top: 12px; }
+  .outro .final { font-size: 21px; margin-top: 44px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="laya-evals-brag" data-start="0"
+     data-width="1920" data-height="1080" data-duration="21">
+
+  <section id="s1" class="clip" data-start="0" data-duration="4" data-track-index="0">
+    <div class="accuse mono">
+      <div class="line" id="l1">we tried to prove their benchmark was wrong.</div>
+      <div class="line" id="l2" style="margin-top: 26px">we couldn&#39;t.</div>
+    </div>
+  </section>
+
+  <section id="s2" class="clip" data-start="4" data-duration="6" data-track-index="0">
+    <div class="table mono">
+      <div class="row" id="r1"><div>MASSIVE intent, English</div><div class="num">0.783</div><div class="num">0.7833</div><div><span class="stamp">reproduces</span></div></div>
+      <div class="row" id="r2"><div>MASSIVE intent, 13 languages</div><div class="num">0.451</div><div class="num">0.4510</div><div><span class="stamp">reproduces</span></div></div>
+      <div class="row" id="r3"><div>XNLI, English</div><div class="num">0.860</div><div class="num">0.8600</div><div><span class="stamp">reproduces</span></div></div>
+      <div class="row" id="r4"><div>XNLI, 14 languages</div><div class="num">0.731</div><div class="num">0.7307</div><div><span class="stamp">reproduces</span></div></div>
+      <div class="caption muted" id="cap">one item in 300. laptop cpu. every claim, re-run from scratch.</div>
+    </div>
+  </section>
+
+  <section id="s3" class="clip" data-start="10" data-duration="6" data-track-index="0">
+    <div style="width: 1080px">
+      <div class="story-head serif" id="head3">the same confidence score, two different sports.</div>
+      <div class="panels mono" style="margin-top: 48px; justify-content: center">
+        <div class="panel" id="p3">
+          <div class="k muted">3 options</div>
+          <div class="gate">0.8074</div>
+          <div class="verdict" style="color:#346538">gate: automate</div>
+          <div class="meter"><i id="m3" style="background:#346538; opacity:0.6"></i></div>
+          <div class="verdict muted" style="margin-top:14px">0.893 coverage at 0.90 accuracy</div>
+        </div>
+        <div class="panel" id="p20">
+          <div class="k muted">20 options</div>
+          <div class="gate">0.9944</div>
+          <div class="verdict" style="color:#956400">gate: barely enough</div>
+          <div class="meter"><i id="m20" style="background:#956400; opacity:0.6"></i></div>
+          <div class="verdict muted" style="margin-top:14px">0.773 coverage at 0.90 accuracy</div>
+        </div>
+      </div>
+      <div class="story-foot" id="foot3" style="margin-top: 46px">thresholds don&#39;t transfer. so we advise per shape.</div>
+    </div>
+  </section>
+
+  <section id="s4" class="clip" data-start="16" data-duration="3" data-track-index="0">
+    <div class="window">
+      <div class="chrome"><i></i><i></i><i></i></div>
+      <div class="term mono">
+        <div id="t1"><span class="ok">OK&nbsp;&nbsp;&nbsp;&nbsp;</span><span>claims.xnli.en.measured:</span> <span class="muted">0.8600 -&gt; 0.8600 (delta +0.0000)</span></div>
+        <div id="t2"><span class="ok">OK&nbsp;&nbsp;&nbsp;&nbsp;</span><span>claims.massive_intent.non_en:</span> <span class="muted">0.4510 -&gt; 0.4510 (delta +0.0000)</span></div>
+        <div id="t3"><span class="ok">OK&nbsp;&nbsp;&nbsp;&nbsp;</span><span>suites.xnli.en.ece_15_bins:</span> <span class="muted">0.0685 -&gt; 0.0685 (goal min)</span></div>
+        <div class="exit muted" id="t4">exit 0 &#8212; accuracy held, calibration held</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s5" class="clip" data-start="19" data-duration="2" data-track-index="0">
+    <div class="outro">
+      <div class="tagline serif" id="o1">judge cheap.<br>audit the confidence.</div>
+      <div class="mark mono" id="o2">laya-evals</div>
+      <div class="slug mono muted" id="o3">github.com/Gjusev/laya-evals</div>
+      <div class="final mono muted" id="o4">all four claims reproduced. still suspicious of the confidence.</div>
+    </div>
+  </section>
+
+  <audio id="music" data-start="0" data-duration="21" data-volume="0.18"
+         data-track-index="4" src="assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.mp3"></audio>
+
+  <audio id="kx1" data-start="0.35" data-duration="0.4" data-volume="0.35" data-track-index="5" src="assets/sfx/keypress-002.wav"></audio>
+  <audio id="kx2" data-start="1.75" data-duration="0.4" data-volume="0.35" data-track-index="5" src="assets/sfx/keypress-005.wav"></audio>
+  <audio id="tk1" data-start="5.0" data-duration="0.4" data-volume="0.4" data-track-index="5" src="assets/sfx/click2.ogg"></audio>
+  <audio id="tk2" data-start="5.8" data-duration="0.4" data-volume="0.4" data-track-index="5" src="assets/sfx/click2.ogg"></audio>
+  <audio id="tk3" data-start="6.6" data-duration="0.4" data-volume="0.4" data-track-index="5" src="assets/sfx/click2.ogg"></audio>
+  <audio id="tk4" data-start="7.4" data-duration="0.4" data-volume="0.4" data-track-index="5" src="assets/sfx/click2.ogg"></audio>
+  <audio id="kx3" data-start="16.3" data-duration="0.4" data-volume="0.35" data-track-index="5" src="assets/sfx/keypress-002.wav"></audio>
+  <audio id="kx4" data-start="16.9" data-duration="0.4" data-volume="0.35" data-track-index="5" src="assets/sfx/keypress-005.wav"></audio>
+  <audio id="kx5" data-start="17.5" data-duration="0.4" data-volume="0.35" data-track-index="5" src="assets/sfx/keypress-002.wav"></audio>
+  <audio id="done" data-start="18.2" data-duration="0.8" data-volume="0.5" data-track-index="5" src="assets/sfx/switch1.ogg"></audio>
+</div>
+
+<script>
+  const tl = gsap.timeline({ paused: true });
+
+  // scene 1: the accusation — long deadpan holds
+  tl.fromTo("#l1", { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 0.35);
+  tl.fromTo("#l2", { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 1.75);
+
+  // scene 2: the receipts — rows arrive one beat apart, readable holds
+  const rows = [["#r1", 5.0], ["#r2", 5.8], ["#r3", 6.6], ["#r4", 7.4]];
+  for (const [sel, at] of rows) {
+    tl.fromTo(sel, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, at);
+  }
+  tl.fromTo("#cap", { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 8.6);
+
+  // scene 3: the real story — head, panels, meters, foot
+  tl.fromTo("#head3", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 10.4);
+  tl.fromTo("#p3", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 11.2);
+  tl.fromTo("#p20", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 12.2);
+  tl.to("#m3", { width: "89%", duration: 1.0, ease: "power2.out" }, 12.6);
+  tl.to("#m20", { width: "77%", duration: 1.0, ease: "power2.out" }, 12.9);
+  tl.fromTo("#foot3", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 13.9);
+
+  // scene 4: the gate — terminal lines type in, exit resolves
+  const terms = [["#t1", 16.3], ["#t2", 16.9], ["#t3", 17.5]];
+  for (const [sel, at] of terms) {
+    tl.fromTo(sel, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "none" }, at);
+  }
+  tl.fromTo("#t4", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "none" }, 18.2);
+
+  // scene 5: outro — one composed frame
+  tl.fromTo("#o1", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 19.15);
+  tl.fromTo("#o2", { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 19.55);
+  tl.fromTo("#o3", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 19.9);
+  tl.fromTo("#o4", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "none" }, 20.3);
+
+  window.__timelines["laya-evals-brag"] = tl;
+</script>
+</body>
+</html>

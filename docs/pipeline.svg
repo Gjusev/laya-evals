@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 300" font-family="Geist Sans, SF Pro Display, Helvetica Neue, sans-serif" role="img" aria-label="laya-evals pipeline: eval items flow through the judge, calibration audit, threshold advisor and CI gate">
+  <defs>
+    <style>
+      .card { fill: #FFFFFF; stroke: #EAEAEA; stroke-width: 1; }
+      .no { fill: #787774; font-size: 11px; font-family: Geist Mono, SF Mono, monospace; letter-spacing: 0.08em; }
+      .title { fill: #111111; font-size: 16px; letter-spacing: -0.01em; }
+      .sub { fill: #787774; font-size: 11.5px; }
+      .mono { font-family: Geist Mono, SF Mono, monospace; }
+      .wire { stroke: #D8D6D1; stroke-width: 1.5; fill: none; }
+      .dot { fill: #1F6C9F; }
+      .dot.g { fill: #346538; }
+      .pulse { animation: pulse 4s infinite; }
+      .c1 { animation-delay: 0s; } .c2 { animation-delay: 0.7s; } .c3 { animation-delay: 1.4s; }
+      .c4 { animation-delay: 2.1s; } .c5 { animation-delay: 2.8s; }
+      @keyframes pulse {
+        0%, 12% { opacity: 1; }
+        20%, 100% { opacity: 0.55; }
+      }
+    </style>
+  </defs>
+
+  <rect width="1160" height="300" fill="#FFFFFF"/>
+
+  <!-- connectors -->
+  <path id="w1" class="wire" d="M 190 150 H 246"/>
+  <path id="w2" class="wire" d="M 426 150 H 482"/>
+  <path id="w3" class="wire" d="M 662 150 H 718"/>
+  <path id="w4" class="wire" d="M 898 150 H 954"/>
+
+  <!-- stage 1: items -->
+  <g class="pulse c1">
+    <rect class="card" x="30" y="90" width="160" height="120" rx="12"/>
+    <text class="no" x="54" y="122">01 / ITEMS</text>
+    <text class="title" x="54" y="148">Eval set</text>
+    <text class="sub" x="54" y="170">model outputs</text>
+    <text class="sub" x="54" y="188">+ gold labels</text>
+  </g>
+
+  <!-- stage 2: judge -->
+  <g class="pulse c2">
+    <rect class="card" x="246" y="90" width="180" height="120" rx="12"/>
+    <text class="no" x="270" y="122">02 / JUDGE</text>
+    <text class="title" x="270" y="148">laya, batched</text>
+    <text class="sub mono" x="270" y="170">answer_confidence</text>
+    <text class="sub" x="270" y="188">the calibrated one</text>
+  </g>
+
+  <!-- stage 3: audit -->
+  <g class="pulse c3">
+    <rect class="card" x="482" y="90" width="180" height="120" rx="12"/>
+    <text class="no" x="506" y="122">03 / AUDIT</text>
+    <text class="title" x="506" y="148">Calibration</text>
+    <text class="sub mono" x="506" y="170">ece · brier · bins</text>
+    <text class="sub" x="506" y="188">15 bins, from scratch</text>
+  </g>
+
+  <!-- stage 4: advise -->
+  <g class="pulse c4">
+    <rect class="card" x="718" y="90" width="180" height="120" rx="12"/>
+    <text class="no" x="742" y="122">04 / ADVISE</text>
+    <text class="title" x="742" y="148">Threshold</text>
+    <text class="sub mono" x="742" y="170">per option count</text>
+    <text class="sub" x="742" y="188">0.80 vs 0.99 gates</text>
+  </g>
+
+  <!-- stage 5: gate -->
+  <g class="pulse c5">
+    <rect class="card" x="954" y="90" width="176" height="120" rx="12"/>
+    <text class="no" x="978" y="122">05 / CI GATE</text>
+    <text class="title" x="978" y="148">Pass / fail</text>
+    <text class="sub mono" x="978" y="170">exit 0 · exit 1</text>
+    <text class="sub" x="978" y="188">accuracy + ECE held</text>
+  </g>
+
+  <!-- travelling dots (SMIL: runs in Chromium and all modern browsers) -->
+  <circle class="dot" r="4">
+    <animateMotion dur="4s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;0.12;1" calcMode="linear">
+      <mpath href="#w1"/>
+    </animateMotion>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.02;0.10;0.14" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="dot" r="4">
+    <animateMotion dur="4s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;0.3;1" calcMode="linear">
+      <mpath href="#w2"/>
+    </animateMotion>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.22;0.28;0.32" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="dot" r="4">
+    <animateMotion dur="4s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;0.5;1" calcMode="linear">
+      <mpath href="#w3"/>
+    </animateMotion>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.42;0.48;0.52" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="dot g" r="4">
+    <animateMotion dur="4s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;0.7;1" calcMode="linear">
+      <mpath href="#w4"/>
+    </animateMotion>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.62;0.68;0.72" dur="4s" repeatCount="indefinite"/>
+  </circle>
+
+  <text class="sub mono" x="30" y="262">when it says 0.9, is it right 90% of the time?</text>
+  <text class="sub mono" x="1130" y="262" text-anchor="end">all four published claims reproduced within 0.0003</text>
+</svg>

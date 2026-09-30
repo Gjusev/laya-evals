@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>laya-evals — judge cheap, audit the confidence</title>
+<style>
+  :root {
+    --canvas: #F7F6F3;
+    --surface: #FFFFFF;
+    --ink: #111111;
+    --muted: #787774;
+    --line: #EAEAEA;
+    --pale-green-bg: #EDF3EC;
+    --pale-green-ink: #346538;
+    --pale-blue-bg: #E1F3FE;
+    --pale-blue-ink: #1F6C9F;
+    --pale-yellow-bg: #FBF3DB;
+    --pale-yellow-ink: #956400;
+    --sans: "Geist Sans", "SF Pro Display", "Helvetica Neue", "Switzer", sans-serif;
+    --serif: "Newsreader", "Instrument Serif", "Lyon Text", Georgia, serif;
+    --mono: "Geist Mono", "SF Mono", "JetBrains Mono", "Cascadia Mono", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ambient light, fixed so it never repaints on scroll */
+  .ambient {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(60rem 30rem at 75% -10%, rgba(31,108,159,0.05), transparent 70%);
+  }
+  main { position: relative; z-index: 1; }
+
+  /* scroll entry */
+  .reveal { opacity: 0; transform: translateY(12px); }
+  .reveal.in {
+    opacity: 1; transform: none;
+    transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1);
+    transition-delay: calc(var(--index, 0) * 80ms);
+  }
+
+  /* top bar */
+  .bar { display: flex; align-items: center; gap: 12px; padding: 20px 0; }
+  .wordmark { font-family: var(--mono); font-size: 14px; letter-spacing: -0.01em; }
+  .tag {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 3px 10px; border-radius: 9999px;
+    background: var(--pale-yellow-bg); color: var(--pale-yellow-ink);
+  }
+  .bar .spacer { flex: 1; }
+  .bar a { color: var(--muted); text-decoration: none; font-size: 13px; }
+  .bar a:hover { color: var(--ink); }
+
+  /* hero: asymmetric split */
+  .hero { display: grid; grid-template-columns: 3fr 2fr; gap: 48px; padding: 72px 0 96px; align-items: center; }
+  h1 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 6vw, 64px);
+    line-height: 1.05; letter-spacing: -0.03em;
+  }
+  h1 em { font-style: italic; color: var(--pale-blue-ink); }
+  .lede { margin-top: 24px; max-width: 46ch; color: var(--ink); font-size: 17px; }
+  .lede .dim { color: var(--muted); }
+  .cta-row { display: flex; gap: 12px; margin-top: 32px; align-items: center; }
+  .cta {
+    display: inline-block; background: var(--ink); color: #fff; text-decoration: none;
+    font-size: 14px; padding: 10px 18px; border-radius: 6px;
+    transition: transform 120ms ease, background 200ms ease;
+  }
+  .cta:hover { background: #333333; }
+  .cta:active { transform: scale(0.98); }
+  .hint { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  kbd {
+    font-family: var(--mono); font-size: 11px; border: 1px solid var(--line);
+    border-bottom-width: 2px; border-radius: 4px; background: var(--surface);
+    padding: 1px 6px;
+  }
+
+  /* faux OS window with the real gate output */
+  .window { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .window .chrome { display: flex; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .window .chrome i { width: 9px; height: 9px; border-radius: 50%; background: #E4E2DE; display: block; }
+  .term { padding: 18px 20px 22px; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; }
+  .term .c-ok { color: var(--pale-green-ink); }
+  .term .c-dim { color: var(--muted); }
+  .term .c-ink { color: var(--ink); }
+
+  /* section scaffolding */
+  section { padding: 88px 0; }
+  .kicker {
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--muted); margin-bottom: 14px;
+  }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 3.4vw, 38px); letter-spacing: -0.02em; line-height: 1.15; }
+  .section-lede { margin-top: 12px; color: var(--muted); max-width: 58ch; }
+
+  /* reproduction data strip */
+  .claims { display: grid; grid-template-columns: 2fr 1fr 1fr; border-top: 1px solid var(--line); margin-top: 40px; }
+  .claims .head, .claims .cell { padding: 18px 20px; border-bottom: 1px solid var(--line); }
+  .claims .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .claims .cell { font-family: var(--mono); font-size: 14px; }
+  .claims .cell .num { font-size: 17px; }
+  .reproduces {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+    background: var(--pale-green-bg); color: var(--pale-green-ink);
+    border-radius: 9999px; padding: 2px 9px; margin-left: 10px; white-space: nowrap;
+  }
+  .footnote { font-size: 13px; color: var(--muted); margin-top: 16px; }
+
+  /* pipeline explainer */
+  .pipeline-stage { display: grid; grid-template-columns: 200px 1fr; gap: 28px; padding: 26px 0; border-bottom: 1px solid var(--line); }
+  .pipeline-stage .no { font-family: var(--mono); font-size: 12px; color: var(--muted); padding-top: 4px; }
+  .pipeline-stage h3 { font-size: 17px; letter-spacing: -0.01em; }
+  .pipeline-stage p { color: var(--muted); font-size: 14.5px; margin-top: 6px; max-width: 62ch; }
+  .pipeline-stage code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--pale-blue-bg);
+    color: var(--pale-blue-ink); border-radius: 4px; padding: 1px 6px;
+  }
+
+  /* threshold table */
+  .thresholds { margin-top: 36px; }
+  .thresholds .row { display: grid; grid-template-columns: 1.4fr 1fr 1fr 2fr; border-bottom: 1px solid var(--line); }
+  .thresholds .row > div { padding: 14px 18px; }
+  .thresholds .row.head > div { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .thresholds .num { font-family: var(--mono); font-size: 15px; }
+  .meter { position: relative; height: 6px; background: #EFEEEA; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+  .meter i { position: absolute; inset: 0 auto 0 0; background: var(--pale-blue-ink); opacity: 0.55; border-radius: 3px; }
+  .meter.warn i { background: var(--pale-yellow-ink); }
+
+  footer { padding: 48px 0 64px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; display: flex; gap: 24px; flex-wrap: wrap; }
+  footer a { color: var(--muted); }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; padding: 48px 0 64px; gap: 36px; }
+    .claims { grid-template-columns: 1.6fr 1fr 1fr; }
+    .pipeline-stage { grid-template-columns: 1fr; gap: 8px; }
+    .thresholds .row { grid-template-columns: 1.2fr 1fr 1fr 1.4fr; }
+    .thresholds .row > div { padding: 12px 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; }
+    * { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<main class="wrap">
+
+  <nav class="bar">
+    <span class="wordmark">laya-evals</span>
+    <span class="tag">unofficial community tool</span>
+    <span class="spacer"></span>
+    <a href="https://github.com/Gjusev/laya-evals">GitHub</a>
+  </nav>
+
+  <header class="hero">
+    <div class="reveal">
+      <h1>Judge every eval item for cents. <em>Then check</em> whether the confidence meant anything.</h1>
+      <p class="lede">
+        laya-evals scores eval sets with <span class="dim">laya</span>, an open System&nbsp;1
+        decision model that runs on CPU, and audits the calibration before anyone
+        automates on a threshold. It caught the gap upstream filed as
+        <span class="dim">#394</span>: the same 0.81 confidence is solid for a 3-option
+        question and a coin flip for 20 options.
+      </p>
+      <div class="cta-row">
+        <a class="cta" href="https://github.com/Gjusev/laya-evals">View the repository</a>
+        <span class="hint"><kbd>uv pip install laya-evals</kbd></span>
+      </div>
+    </div>
+
+    <div class="window reveal" style="--index: 2">
+      <div class="chrome"><i></i><i></i><i></i></div>
+      <div class="term">
+        <div class="c-dim">$ uv run python scripts/check_regression.py \</div>
+        <div class="c-dim">&nbsp;&nbsp;--current current.json --baseline baseline.json</div>
+        <div>&nbsp;</div>
+        <div><span class="c-ok">OK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="c-ink">claims.xnli.en.measured:</span> <span class="c-dim">0.8600 -&gt; 0.8600</span> <span class="c-dim">(delta +0.0000)</span></div>
+        <div><span class="c-ok">OK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="c-ink">claims.massive_intent.non_en:</span> <span class="c-dim">0.4510 -&gt; 0.4510</span> <span class="c-dim">(delta +0.0000)</span></div>
+        <div><span class="c-ok">OK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="c-ink">suites.xnli.en.ece_15_bins:</span> <span class="c-dim">0.0685 -&gt; 0.0685</span> <span class="c-dim">(goal min)</span></div>
+        <div>&nbsp;</div>
+        <div class="c-dim">exit 0 — accuracy held, calibration held</div>
+      </div>
+    </div>
+  </header>
+
+  <section id="reproduces">
+    <div class="reveal">
+      <p class="kicker">reproduction pack</p>
+      <h2>Every published number we could test, reproduced.</h2>
+      <p class="section-lede">
+        Four headline claims from the upstream benchmark table, re-run under the upstream
+        notebook's exact protocol (seed 13, 20-option draws, first 300 rows per language,
+        14 MASSIVE and 15 XNLI languages) on CPU, against their T4. All four came back
+        within 0.0003.
+      </p>
+    </div>
+    <div class="claims reveal" style="--index: 1">
+      <div class="head">Claim</div><div class="head">Published</div><div class="head">Re-run</div>
+      <div class="cell">MASSIVE intent, English <span class="reproduces">reproduces</span></div>
+      <div class="cell num">0.783</div><div class="cell num">0.7833</div>
+      <div class="cell">MASSIVE intent, 13 languages <span class="reproduces">reproduces</span></div>
+      <div class="cell num">0.451</div><div class="cell num">0.4510</div>
+      <div class="cell">XNLI, English <span class="reproduces">reproduces</span></div>
+      <div class="cell num">0.860</div><div class="cell num">0.8600</div>
+      <div class="cell">XNLI, 14 languages <span class="reproduces">reproduces</span></div>
+      <div class="cell num">0.731</div><div class="cell num">0.7307</div>
+    </div>
+    <p class="footnote reveal" style="--index: 2">
+      Verbatim artifacts and per-language detail live in <span class="hint">results/reproduction.json</span>.
+      Deltas at most one item in 300. The tolerance rule is stated in the file.
+    </p>
+  </section>
+
+  <section id="how">
+    <div class="reveal">
+      <p class="kicker">how it works</p>
+      <h2>Five steps, one honest number at each step.</h2>
+    </div>
+
+    <div class="pipeline-stage reveal">
+      <div class="no">01 / judge</div>
+      <div>
+        <h3>A rubric, asked of every item in one batch</h3>
+        <p>Choice, score and boolean questions ride a single laya forward pass. Each answer
+        carries <code>answer_confidence</code>, the calibrated quantity — not the entropy
+        score the API also returns.</p>
+      </div>
+    </div>
+    <div class="pipeline-stage reveal">
+      <div class="no">02 / measure</div>
+      <div>
+        <h3>Gold labels turn judgments into calibration data</h3>
+        <p><code>confidence_outcome_pairs</code> zips each decision with its reference answer,
+        producing the (confidence, outcome) pairs every metric downstream reads.</p>
+      </div>
+    </div>
+    <div class="pipeline-stage reveal">
+      <div class="no">03 / audit</div>
+      <div>
+        <h3>ECE, Brier, reliability bins, coverage curves — from scratch</h3>
+        <p>Fifteen equal-width bins by the book (Guo 2017). The audit answers one question:
+        when the model says 0.9, is it right 90% of the time?</p>
+      </div>
+    </div>
+    <div class="pipeline-stage reveal">
+      <div class="no">04 / advise</div>
+      <div>
+        <h3>A gate per question shape, never one global number</h3>
+        <p>At a target accuracy, <code>recommended_threshold</code> finds the lowest gate that
+        still meets it. Per option count, because thresholds do not transfer.</p>
+      </div>
+    </div>
+    <div class="pipeline-stage reveal">
+      <div class="no">05 / gate</div>
+      <div>
+        <h3>CI fails when accuracy or calibration slips</h3>
+        <p>The regression gate compares fresh measurements against a committed baseline.
+        Wall-clock is refused as a metric: it drifts between runners and would only
+        make CI flaky.</p>
+      </div>
+    </div>
+
+    <div class="reveal" style="--index: 1; margin-top: 56px">
+      <img src="pipeline.svg" alt="Animated pipeline: eval items flow through the laya judge, calibration audit, threshold advisor and CI gate"
+           style="width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--surface)">
+    </div>
+  </section>
+
+  <section id="thresholds">
+    <div class="reveal">
+      <p class="kicker">threshold advisor</p>
+      <h2>The same confidence score buys very different odds.</h2>
+      <p class="section-lede">
+        Measured gates for roughly 90% accuracy. A 20-option question has to clear 0.9944
+        before you automate on it; a 3-option question was already there at 0.8074.
+        One global min_confidence cannot serve both.
+      </p>
+    </div>
+    <div class="thresholds reveal" style="--index: 1">
+      <div class="row head"><div>Question shape</div><div>Target</div><div>Advised gate</div><div>Coverage</div></div>
+      <div class="row">
+        <div>SST-2 · 2 options</div>
+        <div class="num">0.95</div>
+        <div class="num">0.8651</div>
+        <div><span class="num">0.834</span><span class="meter"><i style="width: 83.4%"></i></span></div>
+      </div>
+      <div class="row">
+        <div>XNLI · 3 options</div>
+        <div class="num">0.90</div>
+        <div class="num">0.8074</div>
+        <div><span class="num">0.893</span><span class="meter"><i style="width: 89.3%"></i></span></div>
+      </div>
+      <div class="row">
+        <div>MASSIVE · 20 options</div>
+        <div class="num">0.90</div>
+        <div class="num">0.9944</div>
+        <div><span class="num">0.773</span><span class="meter warn"><i style="width: 77.3%"></i></span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="reveal">
+    <span>Apache 2.0.</span>
+    <span>Built on <a href="https://github.com/NandhaKishorM/laya">laya</a>, the open System 1 decision engine.</span>
+    <span>Not the laya-evals CLI shipped inside the upstream package.</span>
+  </footer>
+
+</main>
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in");
+        observer.unobserve(entry.target);
+      }
+    }
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+</script>
+</body>
+</html>
