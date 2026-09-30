@@ -12,12 +12,13 @@
 
 <p align="center">
   <a href="https://github.com/Gjusev/laya-evals/actions/workflows/ci.yml"><img src="https://github.com/Gjusev/laya-evals/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://pypi.org/project/laya-evals/"><img src="https://img.shields.io/pypi/v/laya-evals?logo=pypi&amp;logoColor=white" alt="PyPI version"></a>
   <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&amp;logoColor=white" alt="Python 3.10 or later">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-346538" alt="Apache 2.0 license"></a>
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick start</a> · <a href="#what-you-get">What you get</a> · <a href="#evidence">Measured evidence</a> · <a href="#demo">Demo</a>
+  <a href="#install">Install</a> · <a href="#what-you-get">What you get</a> · <a href="#evidence">Measured evidence</a> · <a href="#demo">Demo</a> · <a href="https://github.com/Gjusev/laya-evals/releases/tag/v0.1.0">v0.1.0</a>
 </p>
 
 ![laya-evals social preview — calibration-first LLM evaluation for CI](docs/assets/social-preview.jpg)
@@ -51,16 +52,13 @@ An answer confidence is only safe to automate on if it has been calibrated again
 - **Use the right confidence:** thresholds are shaped by option count. The audit is specifically designed to prevent a value that worked for one question type from silently governing another.
 - **Known upstream caveat:** the laya checkpoint reports invalid temperature buckets for `choice:11+`; the SST-2 measurement uses two options and is outside that bucket.
 
-## Quick start
+## Install
 
-Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/).
+`laya-evals` is available on [PyPI](https://pypi.org/project/laya-evals/). Requires Python 3.10+.
 
 ```bash
-git clone https://github.com/Gjusev/laya-evals.git
-cd laya-evals
-uv venv
-uv pip install -e ".[dev]"
-pytest
+pip install laya-evals
+# or: uv add laya-evals
 ```
 
 Start by turning known outcomes into calibration metrics:
@@ -99,6 +97,18 @@ confidences, outcomes = confidence_outcome_pairs(
     [item["relevance"] for item in judged], gold_relevance
 )
 print(ece(confidences, outcomes))
+```
+
+## Development
+
+For development from source, use [uv](https://docs.astral.sh/uv/):
+
+```bash
+git clone https://github.com/Gjusev/laya-evals.git
+cd laya-evals
+uv venv
+uv pip install -e ".[dev]"
+pytest
 ```
 
 ## Evidence
@@ -177,12 +187,15 @@ The reusable GitHub Action lives at [`.github/actions/regression-gate`](.github/
 
 ## Demo
 
-<video controls muted playsinline preload="metadata" poster="docs/assets/social-preview.jpg" width="100%">
-  <source src="docs/brag.mp4" type="video/mp4">
-  Your browser does not support embedded video. <a href="docs/brag.mp4">Watch the 21-second demo</a>.
-</video>
+<p align="center">
+  <a href="docs/brag.mp4">
+    <img src="docs/assets/social-preview.jpg" alt="Play the 21-second laya-evals demo" width="100%">
+  </a>
+</p>
 
-**21 seconds:** from a real benchmark reproduction to the threshold-calibration finding. If your README renderer does not support video, use [the direct MP4 link](docs/brag.mp4) or open the [one-page visual overview](docs/index.html).
+<p align="center"><a href="docs/brag.mp4"><strong>▶ Watch the 21-second demo</strong></a></p>
+
+The demo follows a real benchmark reproduction through the threshold-calibration finding. You can also open the [one-page visual overview](docs/index.html).
 
 ## Further reading
 
