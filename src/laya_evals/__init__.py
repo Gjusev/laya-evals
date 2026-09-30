@@ -1,5 +1,12 @@
 """laya-evals: cheap LLM-as-judge for CI plus a calibration auditor: score eval sets with a local System 1 decision model and audit confidence before automating on it."""
 
+from laya_evals.agreement import (
+    JudgeComparison,
+    cohens_kappa,
+    judge_comparison,
+    percent_agreement,
+    quadratic_weighted_kappa,
+)
 from laya_evals.calibration import (
     CoveragePoint,
     ReliabilityBin,
@@ -15,12 +22,17 @@ __version__ = "0.1.0"
 __all__ = [
     "CoveragePoint",
     "Judge",
+    "JudgeComparison",
     "Judgment",
     "ReliabilityBin",
     "brier_score",
+    "cohens_kappa",
     "confidence_outcome_pairs",
     "coverage_accuracy_curve",
     "ece",
+    "judge_comparison",
+    "percent_agreement",
+    "quadratic_weighted_kappa",
     "reliability_bins",
     "__version__",
 ]

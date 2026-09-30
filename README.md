@@ -16,7 +16,8 @@ the open-source System 1 decision engine (Apache 2.0).
 
 - [x] Calibration core: ECE, Brier, reliability bins and coverage/accuracy curves implemented from scratch, tested against synthetic distributions with known values
 - [x] Judge: rubric-based score and choice questions as a drop-in cheap replacement for LLM judges, batched
-- [ ] Judge comparison: agreement (kappa) and cost per 1k judgments vs an LLM judge on a public set
+- [x] Judge comparison tooling: percent agreement, Cohen's kappa, quadratic-weighted kappa and cost-per-1k scaling against a reference judge
+- [ ] Public-set judge comparison: measured agreement and cost per 1k judgments vs an LLM judge on a public set (TODO(measure))
 - [ ] Reproduction pack: re-run public benchmark claims (MASSIVE and XNLI subsets) and publish what reproduces
 - [ ] Threshold advisor: recommended min_confidence per question shape at a target accuracy, by option count
 - [ ] GitHub Action: fail the build when accuracy or calibration regresses
@@ -87,6 +88,33 @@ For score questions the judgment's `level` is the argmax over the emitted
 probabilities — the same level laya's own `decide()` reports — not the
 rounded expected score, so gold comparisons match laya's semantics on
 spread-out distributions too.
+
+## Comparing judges
+
+`judge_comparison` summarizes the laya judge against a reference judge (an
+LLM judge or human gold labels) on the same items: percent agreement,
+Cohen's kappa, quadratic-weighted kappa for ordinal score levels, each
+judge's accuracy against gold, and measured costs scaled to per-1k
+judgments:
+
+```python
+from laya_evals import judge_comparison
+
+comparison = judge_comparison(
+    laya_decisions,       # e.g. [j.level for j in quality_judgments]
+    reference_decisions,  # the LLM judge's decisions on the same items
+    golds=gold_levels,
+    levels=[0, 1, 2, 3],
+    laya_cost=measured_laya_cost,          # TODO(measure) on a public set
+    reference_cost=measured_reference_cost,  # TODO(measure)
+)
+# percent_agreement, kappa, weighted_kappa, laya_accuracy,
+# reference_accuracy, laya_cost_per_1k, reference_cost_per_1k
+```
+
+Fields whose inputs were not supplied stay `None` rather than being
+invented; the public-set numbers themselves are TODO(measure) until a real
+run is recorded.
 
 ## Development setup
 
