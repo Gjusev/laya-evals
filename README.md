@@ -197,11 +197,9 @@ The reusable GitHub Action lives at [`.github/actions/regression-gate`](.github/
 
 ## Demo
 
-<p align="center">
-  <video controls playsinline preload="metadata" poster="docs/assets/social-preview.jpg" width="100%">
-    <source src="docs/brag.mp4" type="video/mp4">
-  </video>
-</p>
+<video src="docs/brag.mp4" poster="docs/assets/social-preview.jpg" controls muted playsinline width="960">
+  <a href="docs/brag.mp4"><img src="docs/assets/social-preview.jpg" alt="Watch the 21-second laya-evals demo" width="960" /></a>
+</video>
 
 <p align="center"><a href="docs/brag.mp4"><strong>▶ Watch the 21-second demo</strong></a></p>
 
