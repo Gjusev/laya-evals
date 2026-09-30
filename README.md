@@ -17,7 +17,7 @@ the open-source System 1 decision engine (Apache 2.0).
 - [x] Calibration core: ECE, Brier, reliability bins and coverage/accuracy curves implemented from scratch, tested against synthetic distributions with known values
 - [x] Judge: rubric-based score and choice questions as a drop-in cheap replacement for LLM judges, batched
 - [x] Judge comparison tooling: percent agreement, Cohen's kappa, quadratic-weighted kappa and cost-per-1k scaling against a reference judge
-- [ ] Public-set judge comparison: measured agreement and cost per 1k judgments vs an LLM judge on a public set (TODO(measure))
+- [ ] Public-set judge comparison: measured agreement and cost per 1k judgments vs an LLM judge on a public set (laya side measured vs gold on SST-2, see below; the LLM-judge half is TODO(measure) until a reference run with an API key exists)
 - [ ] Reproduction pack: re-run public benchmark claims (MASSIVE and XNLI subsets) and publish what reproduces
 - [ ] Threshold advisor: recommended min_confidence per question shape at a target accuracy, by option count
 - [ ] GitHub Action: fail the build when accuracy or calibration regresses
@@ -115,6 +115,36 @@ comparison = judge_comparison(
 Fields whose inputs were not supplied stay `None` rather than being
 invented; the public-set numbers themselves are TODO(measure) until a real
 run is recorded.
+
+## Measured: laya judge on SST-2 (public set)
+
+One real run of the laya judge on the public SST-2 dev split (872 balanced
+sentences, Kaggle dataset `kanthetineha/sst2-sentiment-analysis`), CPU
+inference, batches of 64, laya 0.3.21 with the default
+`convaiinnovations/laya` checkpoint. Sentiment was asked as a two-option
+choice question; gold labels map 1 -> positive, 0 -> negative. Numbers are
+from a single run on one machine and are recorded verbatim in
+`results/sst2-comparison.json`:
+
+| Metric | Value |
+|---|---|
+| Accuracy vs gold | 0.8968 |
+| Cohen's kappa vs gold | 0.7938 |
+| ECE (15 bins) | 0.0253 |
+| Brier score | 0.0779 |
+| Throughput | 6.6 decisions/s (wall-clock, batched, CPU) |
+
+The reference LLM judge was not run (no API key): its agreement, kappa and
+cost-per-1k fields stay null in the results file — TODO(measure), not
+invented. The run also surfaces a laya RuntimeWarning that the checkpoint
+ships invalid temperature buckets for `choice:11+` questions (11 or more
+options); the two-option sentiment question used here is outside that
+bucket. Reproduce with:
+
+```bash
+uv run --extra compare python scripts/sst2_judge_comparison.py
+uv run --extra compare --extra dev pytest -m slow   # 16-item smoke, real checkpoint
+```
 
 ## Development setup
 
