@@ -23,3 +23,4 @@ brag-output/snapshots/
 .playwright-mcp/
 brag-output/brag-raw-poster.png
 brag-output/brag-with-poster.mp4
+docs/kaggle-for-agents.local.md
